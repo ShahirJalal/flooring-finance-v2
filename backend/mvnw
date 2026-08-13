@@ -1,0 +1,45 @@
+#!/bin/sh
+# Maven Wrapper launcher.
+#
+# If a `mvn` executable is already on the PATH it is used directly.
+# Otherwise the Maven distribution referenced in
+# .mvn/wrapper/maven-wrapper.properties is downloaded once into
+# ~/.m2/wrapper/dists and reused on subsequent runs.
+
+set -e
+
+BASEDIR="$(cd "$(dirname "$0")" && pwd)"
+WRAPPER_PROPS="$BASEDIR/.mvn/wrapper/maven-wrapper.properties"
+
+if command -v mvn >/dev/null 2>&1; then
+  exec mvn "$@"
+fi
+
+DISTRIBUTION_URL=$(grep '^distributionUrl=' "$WRAPPER_PROPS" | cut -d'=' -f2-)
+if [ -z "$DISTRIBUTION_URL" ]; then
+  echo "mvnw: distributionUrl not found in $WRAPPER_PROPS" >&2
+  exit 1
+fi
+
+DIST_VERSION=$(echo "$DISTRIBUTION_URL" | sed -n 's#.*/apache-maven-\([0-9.]*\)-bin\.zip#\1#p')
+CACHE_DIR="$HOME/.m2/wrapper/dists/apache-maven-$DIST_VERSION"
+MAVEN_HOME="$CACHE_DIR/apache-maven-$DIST_VERSION"
+
+if [ ! -x "$MAVEN_HOME/bin/mvn" ]; then
+  echo "mvnw: downloading Apache Maven $DIST_VERSION..." >&2
+  mkdir -p "$CACHE_DIR"
+  TMP_ZIP="$CACHE_DIR/maven.zip"
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL -o "$TMP_ZIP" "$DISTRIBUTION_URL"
+  elif command -v wget >/dev/null 2>&1; then
+    wget -q -O "$TMP_ZIP" "$DISTRIBUTION_URL"
+  else
+    echo "mvnw: need curl or wget to download Maven" >&2
+    exit 1
+  fi
+  unzip -q -o "$TMP_ZIP" -d "$CACHE_DIR"
+  rm -f "$TMP_ZIP"
+  chmod +x "$MAVEN_HOME/bin/mvn"
+fi
+
+exec "$MAVEN_HOME/bin/mvn" "$@"

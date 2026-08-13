@@ -5,7 +5,10 @@ WORKDIR /app
 # Leverage Docker layer caching: resolve dependencies before copying source.
 COPY mvnw pom.xml ./
 COPY .mvn/ .mvn/
-RUN apk add --no-cache bash && ./mvnw -q -B dependency:go-offline
+# mvnw loses its executable bit whenever it's committed from a Windows
+# machine (NTFS doesn't track the Unix executable permission git needs) -
+# restore it explicitly rather than depending on git to have preserved it.
+RUN chmod +x mvnw && apk add --no-cache bash && ./mvnw -q -B dependency:go-offline
 
 COPY src/ src/
 RUN ./mvnw -q -B -DskipTests package

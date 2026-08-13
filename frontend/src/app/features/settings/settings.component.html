@@ -1,0 +1,82 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Settings</h1>
+  </div>
+
+  <p-card header="Appearance">
+    <div class="field">
+      <label>Theme</label>
+      <p-selectButton
+        [options]="themeOptions" optionLabel="label" optionValue="value" [allowEmpty]="false"
+        [ngModel]="themeService.theme()" (ngModelChange)="themeService.set($event)"
+      >
+        <ng-template let-item>
+          <i [class]="item.icon"></i>
+          <span class="ml-2">{{ item.label }}</span>
+        </ng-template>
+      </p-selectButton>
+    </div>
+  </p-card>
+
+  <p-card header="Account">
+    @if (authService.currentUser(); as user) {
+      <p class="mt-0"><strong>Username:</strong> {{ user.username }}</p>
+    }
+    <div class="flex flex-column gap-3" style="max-width: 420px;">
+      <div class="field">
+        <label>Email *</label>
+        <input pInputText class="w-full" [(ngModel)]="profileForm.email" name="email" />
+      </div>
+      <div class="field">
+        <label>Full Name</label>
+        <input pInputText class="w-full" [(ngModel)]="profileForm.fullName" name="fullName" />
+      </div>
+      @if (profileError()) {
+        <p-message severity="error" [text]="profileError()!" styleClass="w-full" />
+      }
+      <div>
+        <button pButton type="button" label="Save Changes" icon="pi pi-check" [loading]="profileSubmitting()" (click)="saveProfile()"></button>
+      </div>
+    </div>
+
+    <hr class="my-4" />
+
+    <div class="flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <div class="font-medium">Password</div>
+        <div class="text-color-secondary" style="font-size: 0.85rem;">Change the password used to sign in.</div>
+      </div>
+      <button pButton type="button" label="Change Password" icon="pi pi-lock" [outlined]="true" (click)="openChangePassword()"></button>
+    </div>
+
+    <p class="text-color-secondary mb-0" style="margin-top: 1.5rem;">This system has a single owner account - there is no separate worker login.</p>
+  </p-card>
+
+  <p class="text-color-secondary text-center" style="font-size: 0.8rem;">
+    MYR (RM) &middot; Asia/Kuala_Lumpur &middot; DD/MM/YYYY &middot; Peninsular Malaysia
+  </p>
+</div>
+
+<p-dialog [(visible)]="passwordDialogVisible" header="Change Password" [modal]="true" [style]="{ width: '26rem' }" [dismissableMask]="true">
+  <div class="flex flex-column gap-3">
+    <div class="field">
+      <label>Current Password *</label>
+      <p-password [(ngModel)]="passwordForm.currentPassword" name="currentPassword" styleClass="w-full" inputStyleClass="w-full" [toggleMask]="true" [feedback]="false" />
+    </div>
+    <div class="field">
+      <label>New Password *</label>
+      <p-password [(ngModel)]="passwordForm.newPassword" name="newPassword" styleClass="w-full" inputStyleClass="w-full" [toggleMask]="true" />
+    </div>
+    <div class="field">
+      <label>Confirm New Password *</label>
+      <p-password [(ngModel)]="passwordForm.confirmPassword" name="confirmPassword" styleClass="w-full" inputStyleClass="w-full" [toggleMask]="true" [feedback]="false" />
+    </div>
+    @if (passwordError()) {
+      <p-message severity="error" [text]="passwordError()!" styleClass="w-full" />
+    }
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Cancel" [text]="true" severity="secondary" (click)="passwordDialogVisible.set(false)"></button>
+    <button pButton type="button" label="Change Password" icon="pi pi-check" [loading]="passwordSubmitting()" (click)="changePassword()"></button>
+  </ng-template>
+</p-dialog>

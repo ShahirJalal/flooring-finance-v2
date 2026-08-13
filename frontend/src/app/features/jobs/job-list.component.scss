@@ -1,0 +1,10 @@
+// Mobile-only "New Job" FAB, positioned above the fixed bottom nav.
+.fab {
+  position: fixed;
+  right: 1.25rem;
+  bottom: calc(4rem + 1.25rem);
+  z-index: 9;
+  width: 3.25rem;
+  height: 3.25rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}

@@ -1,0 +1,118 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Jobs</h1>
+    <button pButton type="button" label="New Job" icon="pi pi-plus" class="hidden md:inline-flex" (click)="openCreate()"></button>
+  </div>
+
+  <p-card>
+    <div class="flex flex-wrap align-items-end gap-3">
+      <div class="field flex-grow-1" style="min-width: 200px;">
+        <label>Search</label>
+        <input pInputText class="w-full" [(ngModel)]="searchText" (keyup.enter)="load()" placeholder="Job, customer or location" />
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <p-select [options]="statusOptions" optionLabel="label" optionValue="value" [(ngModel)]="statusFilter" placeholder="All statuses" [showClear]="true" (onChange)="load()" (onClear)="load()" />
+      </div>
+      <button pButton label="Search" icon="pi pi-search" [text]="true" (click)="load()"></button>
+    </div>
+  </p-card>
+
+  <p-card>
+    <p-table [value]="jobs()" [loading]="loading()" [paginator]="true" [rows]="15" responsiveLayout="scroll">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Job</th>
+          <th>Customer</th>
+          <th>Location</th>
+          <th>Date</th>
+          <th>Collection</th>
+          <th>Total Cost</th>
+          <th>Profit</th>
+          <th>Status</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-job>
+        <tr class="cursor-pointer" [routerLink]="['/jobs', job.id]">
+          <td>{{ job.name }}</td>
+          <td>{{ job.customerName || '-' }}</td>
+          <td>{{ job.location || '-' }}</td>
+          <td>{{ job.jobDate ? (job.jobDate | date: 'dd/MM/yyyy') : '-' }}</td>
+          <td>{{ job.collectionAmount | myr }}</td>
+          <td>{{ job.totalCost | myr }}</td>
+          <td [class.text-negative]="job.profit < 0" [class.text-positive]="job.profit >= 0">
+            <i class="pi" [class.pi-arrow-down]="job.profit < 0" [class.pi-arrow-up]="job.profit >= 0"></i>
+            {{ job.profit | myr }}
+          </td>
+          <td><p-tag [value]="job.status" [severity]="statusSeverity(job.status)" /></td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8">
+            <div class="empty-state">
+              <i class="pi pi-briefcase"></i>
+              @if (searchText || statusFilter) {
+                <p>No jobs match your search.</p>
+              } @else {
+                <p>No jobs yet.</p>
+                <button pButton type="button" label="Add your first job" icon="pi pi-plus" [text]="true" (click)="openCreate()"></button>
+              }
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>
+
+<button
+  pButton type="button" icon="pi pi-plus" [rounded]="true" class="fab md:hidden"
+  pTooltip="New Job" tooltipPosition="left" aria-label="New Job"
+  (click)="openCreate()"
+></button>
+
+<p-dialog [(visible)]="dialogVisible" header="New Job" [modal]="true" [style]="{ width: '32rem' }" [dismissableMask]="true">
+  <div class="flex flex-column gap-3">
+    <div class="field">
+      <label>Job Name *</label>
+      <input pInputText class="w-full" [(ngModel)]="form.name" name="name" placeholder="e.g. Taman Melawati House" />
+    </div>
+    <div class="grid">
+      <div class="col-6 field">
+        <label>Customer</label>
+        <input pInputText class="w-full" [(ngModel)]="form.customerName" name="customerName" placeholder="e.g. Ahmad" />
+      </div>
+      <div class="col-6 field">
+        <label>Job Date</label>
+        <p-datepicker class="w-full" [dateFormat]="dateFormat" [(ngModel)]="form.jobDate" name="jobDate" [showIcon]="true" [showButtonBar]="true" />
+      </div>
+    </div>
+    <div class="field">
+      <label>Location</label>
+      <input pInputText class="w-full" [(ngModel)]="form.location" name="location" placeholder="e.g. Taman Melawati, Kuala Lumpur" />
+    </div>
+    <div class="grid">
+      <div class="col-6 field">
+        <label>State</label>
+        <p-select class="w-full" [options]="stateOptions" optionLabel="label" optionValue="value" [(ngModel)]="form.state" name="state" [showClear]="true" placeholder="Select state" />
+      </div>
+      <div class="col-6 field">
+        <label>Status</label>
+        <p-select class="w-full" [options]="statusOptions" optionLabel="label" optionValue="value" [(ngModel)]="form.status" name="status" />
+      </div>
+    </div>
+    <div class="field">
+      <label>Collection (RM) *</label>
+      <p-inputnumber class="w-full" [(ngModel)]="form.collectionAmount" name="collectionAmount" mode="decimal" prefix="RM " [minFractionDigits]="2" placeholder="How much did/will you collect for this job?" />
+    </div>
+    <div class="field">
+      <label>Notes</label>
+      <textarea pTextarea class="w-full" rows="2" [(ngModel)]="form.notes" name="notes"></textarea>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Cancel" [text]="true" severity="secondary" (click)="dialogVisible.set(false)"></button>
+    <button pButton type="button" label="Create Job" icon="pi pi-check" (click)="save()"></button>
+  </ng-template>
+</p-dialog>

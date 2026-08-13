@@ -1,0 +1,26 @@
+<div class="login-page">
+  <p-card styleClass="login-card">
+    <div class="login-brand">
+      <i class="pi pi-th-large"></i>
+      <h1>Flooring Finance</h1>
+    </div>
+    <p class="login-subtitle">Sign in to track job collections, costs and profit.</p>
+
+    <form (ngSubmit)="submit()" class="login-form">
+      <div class="field">
+        <label for="username">Username</label>
+        <input pInputText id="username" name="username" [(ngModel)]="username" autocomplete="username" class="w-full" />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <p-password id="password" name="password" [(ngModel)]="password" autocomplete="current-password" styleClass="w-full" inputStyleClass="w-full" [toggleMask]="true" [feedback]="false" />
+      </div>
+
+      @if (errorMessage()) {
+        <p-message severity="error" [text]="errorMessage()!" styleClass="w-full" />
+      }
+
+      <button pButton type="submit" label="Log in" icon="pi pi-sign-in" class="w-full" [loading]="loading()"></button>
+    </form>
+  </p-card>
+</div>

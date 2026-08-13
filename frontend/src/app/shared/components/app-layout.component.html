@@ -1,0 +1,63 @@
+<ng-template #navFooter>
+  @if (currentUser) {
+    <div class="nav-user">
+      <i class="pi pi-user"></i>
+      <span>{{ currentUser.fullName || currentUser.username }}</span>
+    </div>
+  }
+  <button
+    pButton type="button" [text]="true" severity="secondary" size="small" class="w-full justify-content-start"
+    [icon]="themeService.theme() === 'dark' ? 'pi pi-sun' : 'pi pi-moon'"
+    [label]="themeService.theme() === 'dark' ? 'Light mode' : 'Dark mode'"
+    (click)="themeService.toggle()"
+  ></button>
+  <button pButton type="button" [text]="true" severity="secondary" size="small" class="w-full justify-content-start" label="Log out" icon="pi pi-sign-out" (click)="logout()"></button>
+</ng-template>
+
+<div class="app-shell">
+  <aside class="sidebar hidden md:flex">
+    <div class="brand">
+      <i class="pi pi-th-large"></i>
+      <span>Flooring Finance</span>
+    </div>
+    <nav class="nav-list">
+      @for (item of navItems; track item.route) {
+        <a [routerLink]="item.route" routerLinkActive="active" class="nav-link">
+          <i [class]="item.icon"></i>
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+    <div class="nav-footer">
+      <ng-container *ngTemplateOutlet="navFooter"></ng-container>
+    </div>
+  </aside>
+
+  <div class="main-column">
+    <header class="topbar md:hidden">
+      <div class="brand">
+        <i class="pi pi-th-large"></i>
+        <span>Flooring Finance</span>
+      </div>
+      <button
+        pButton type="button" [text]="true" severity="secondary" [rounded]="true"
+        [icon]="themeService.theme() === 'dark' ? 'pi pi-sun' : 'pi pi-moon'"
+        [attr.aria-label]="themeService.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+        pTooltip="Toggle theme" tooltipPosition="bottom"
+        (click)="themeService.toggle()"
+      ></button>
+    </header>
+    <main class="content-area">
+      <router-outlet />
+    </main>
+
+    <nav class="bottom-nav md:hidden">
+      @for (item of navItems; track item.route) {
+        <a [routerLink]="item.route" routerLinkActive="active" class="bottom-nav-link">
+          <i [class]="item.icon"></i>
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+  </div>
+</div>

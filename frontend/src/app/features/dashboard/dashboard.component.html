@@ -1,0 +1,115 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Dashboard</h1>
+  </div>
+
+  <p-card>
+    <div class="flex flex-column gap-3">
+      <p-selectButton
+        [options]="presetOptions" optionLabel="label" optionValue="value" [allowEmpty]="false"
+        [ngModel]="selectedPreset" (ngModelChange)="applyPreset($event)"
+      />
+      <div class="flex flex-wrap align-items-end gap-3">
+        <div class="field">
+          <label>From</label>
+          <p-datepicker [dateFormat]="dateFormat" [(ngModel)]="from" [showIcon]="true" (onSelect)="onDateChange()" />
+        </div>
+        <div class="field">
+          <label>To</label>
+          <p-datepicker [dateFormat]="dateFormat" [(ngModel)]="to" [showIcon]="true" (onSelect)="onDateChange()" />
+        </div>
+        <button pButton label="Apply" icon="pi pi-filter" (click)="refresh()"></button>
+      </div>
+    </div>
+  </p-card>
+
+  @if (summary(); as s) {
+    <div class="grid">
+      <div class="col-12 sm:col-6 lg:col-3">
+        <p-card>
+          <div class="stat-tile">
+            <span class="stat-label">Collection</span>
+            <span class="stat-value">{{ s.totalCollection | myr }}</span>
+          </div>
+        </p-card>
+      </div>
+      <div class="col-12 sm:col-6 lg:col-3">
+        <p-card>
+          <div class="stat-tile">
+            <span class="stat-label">Costs</span>
+            <span class="stat-value">{{ s.totalCost | myr }}</span>
+          </div>
+        </p-card>
+      </div>
+      <div class="col-12 sm:col-6 lg:col-3">
+        <p-card>
+          <div class="stat-tile">
+            <span class="stat-label">Profit</span>
+            <span class="stat-value" [class.text-negative]="s.totalProfit < 0" [class.text-positive]="s.totalProfit >= 0">
+              <i class="pi" [class.pi-arrow-down]="s.totalProfit < 0" [class.pi-arrow-up]="s.totalProfit >= 0"></i>
+              {{ s.totalProfit | myr }}
+            </span>
+          </div>
+        </p-card>
+      </div>
+      <div class="col-12 sm:col-6 lg:col-3">
+        <p-card>
+          <div class="stat-tile">
+            <span class="stat-label">Jobs</span>
+            <span class="stat-value">{{ s.jobCount }}</span>
+          </div>
+        </p-card>
+      </div>
+    </div>
+
+    <p-card header="Recent Jobs">
+      <p-table [value]="s.recentJobs" responsiveLayout="scroll">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Job</th>
+            <th>Collection</th>
+            <th>Cost</th>
+            <th>Profit</th>
+            <th>Status</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-job>
+          <tr>
+            <td><a [routerLink]="['/jobs', job.id]">{{ job.name }}</a></td>
+            <td>{{ job.collectionAmount | myr }}</td>
+            <td>{{ job.totalCost | myr }}</td>
+            <td [class.text-negative]="job.profit < 0" [class.text-positive]="job.profit >= 0">{{ job.profit | myr }}</td>
+            <td><p-tag [value]="job.status" [severity]="statusSeverity(job.status)" /></td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <i class="pi pi-briefcase"></i>
+                <p>No jobs yet.</p>
+                <a routerLink="/jobs"><button pButton type="button" label="Add your first job" icon="pi pi-plus" [text]="true"></button></a>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+  } @else if (loading()) {
+    <div class="grid">
+      @for (i of [1, 2, 3, 4]; track i) {
+        <div class="col-12 sm:col-6 lg:col-3">
+          <p-card>
+            <div class="stat-tile">
+              <p-skeleton width="6rem" height="0.85rem" styleClass="mb-1" />
+              <p-skeleton width="8rem" height="1.75rem" />
+            </div>
+          </p-card>
+        </div>
+      }
+    </div>
+    <p-card>
+      <p-skeleton height="12rem" />
+    </p-card>
+  }
+</div>

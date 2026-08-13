@@ -27,7 +27,7 @@ pipeline {
                 // startup), so give it a few tries rather than a single curl.
                 sh '''
                     for i in $(seq 1 15); do
-                        if curl --fail --silent --show-error http://localhost/ > /dev/null; then
+                        if curl --fail --silent --show-error http://localhost:4203/ > /dev/null; then
                             exit 0
                         fi
                         sleep 5

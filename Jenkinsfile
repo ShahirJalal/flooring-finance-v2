@@ -6,6 +6,10 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
+                // .env lives outside the workspace (~/flooring-finance.env) on
+                // purpose - this job's checkout wipes untracked files, so a
+                // .env sitting inside the workspace doesn't survive a rebuild.
+                sh 'cp ~/flooring-finance.env .env'
             }
         }
 

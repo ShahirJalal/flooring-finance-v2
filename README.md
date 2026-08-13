@@ -71,8 +71,11 @@ docker compose up -d --build
 ```
 
 - Frontend: http://localhost
-- Backend API: http://localhost:8080/api
-- Postgres: localhost:5432 (credentials from `.env`)
+- Backend API: reachable at `/api` through the frontend's Nginx proxy - not
+  published directly to the host (see Docker deployment below)
+- Postgres: internal to the Docker network only; use
+  `docker compose exec postgres psql -U finance -d flooring_finance` if you
+  need a shell into it
 
 With `SPRING_PROFILES_ACTIVE=dev` (the default), the backend seeds five
 realistic flooring jobs (Taman Melawati House, Shah Alam Office, Kajang
@@ -136,7 +139,7 @@ All variables are documented in [`.env.example`](.env.example). Summary:
 | `JWT_EXPIRATION_MS` | backend | Session length in milliseconds (default 7 days) |
 | `APP_CORS_ALLOWED_ORIGINS` | backend | Allowed frontend origin(s) for CORS |
 | `COOKIE_SECURE` | backend | `true` in production (HTTPS); `false` for local http://localhost |
-| `POSTGRES_PORT` / `BACKEND_PORT` / `FRONTEND_PORT` | all | Host ports - change if they clash with something else |
+| `FRONTEND_PORT` | frontend | The only port published to the host - change if it clashes with something else |
 
 Never commit a real `.env` file - it's gitignored.
 
@@ -164,26 +167,35 @@ differently, this is the only file that needs to change.
 
 `docker-compose.yml` wires up `postgres`, `backend` and `frontend` with a
 named volume for Postgres data and environment variables sourced from `.env`.
+Only `frontend` publishes a port to the host - Nginx reaches `backend`, and
+`backend` reaches `postgres`, entirely over the internal Compose network.
 
 ---
 
 ## Jenkins deployment
 
-The included `Jenkinsfile` is a simple declarative pipeline for an Ubuntu
-server with Docker, the Compose plugin, Java 17 and Node 20 available:
+The included `Jenkinsfile` is a simple declarative pipeline that just drives
+Docker Compose - it runs on an agent labeled `ubuntu`, which needs Docker
+available (and nothing else; there's no host-side Java/Node build step, since
+each `Dockerfile` compiles from source itself):
 
 1. **Checkout** - pulls this repository.
-2. **Load environment** - copies a Jenkins "Secret file" credential named
-   `flooring-finance-env` into `.env` (create this once in
-   *Manage Jenkins → Credentials* with your real production `.env` contents).
-3. **Build Backend** - `./mvnw package`.
-4. **Build Frontend** - `npm ci && npm run build`.
-5. **Build Docker Images** - `docker compose build --pull`.
-6. **Stop Existing Containers** - `docker compose down`.
-7. **Docker Compose Up** - `docker compose up -d`.
-8. **Health Check** - polls `/actuator/health` and the frontend root until
-   both respond, failing (with logs) if they don't come up in time.
-9. **Cleanup** - `docker image prune -f`.
+2. **Stop Existing Stack** - `docker compose down`.
+3. **Build & Deploy** - `docker compose up -d --build --remove-orphans`.
+4. **Verify Deployment** - polls the frontend root until it responds, up to
+   ~75 seconds, failing the build if it never comes up.
+
+`.env` is set up **once**, by hand, directly in the server's Jenkins workspace
+directory - not through a Jenkins credential:
+
+```bash
+cd /var/jenkins_home/workspace/<job-name>   # or wherever this job checks out to
+cp .env.example .env
+nano .env                                    # set real POSTGRES_PASSWORD, JWT_SECRET, etc.
+```
+
+Since `.env` is gitignored, `checkout scm` never touches it on later builds -
+it just sits there and gets reused by every subsequent deploy.
 
 ---
 

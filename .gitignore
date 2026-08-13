@@ -1,0 +1,30 @@
+# --- Backend (Maven / Java) ---
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+*.class
+*.log
+HELP.md
+
+# --- Frontend (Angular / Node) ---
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+npm-debug.log*
+
+# --- IDE ---
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+
+# --- Tooling ---
+.claude/
+
+# --- Env / secrets ---
+.env
+.env.local
+*.pem
+
+# --- Docker ---
+postgres-data/

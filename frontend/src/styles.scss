@@ -1,0 +1,175 @@
+@import "primeicons/primeicons.css";
+@import "primeflex/primeflex.scss";
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  // NOT --p-surface-50: that's a raw primitive ramp step, always near-white
+  // regardless of theme - only semantic tokens like this one actually flip
+  // between light/dark via the .app-dark class. Using the primitive here is
+  // what left the page canvas white while every card correctly went dark.
+  background: var(--p-content-background);
+  color: var(--p-text-color);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+// PrimeNG's component selectors (p-card, p-table, ...) are custom element
+// tags with no host display set - browsers default unknown elements to
+// `display: inline`, which silently breaks any margin/width rule aimed at
+// them (vertical margins on inline boxes don't push layout, which is what
+// was causing cards to visually overlap despite "having" a margin-bottom).
+// Force them block wherever we use them as page-flow containers.
+p-card, p-skeleton, p-chart, p-table, p-dialog, p-confirmdialog, p-toast {
+  display: block;
+}
+
+// Every page is a stack of p-card sections in a flex column - this just
+// gives that stack consistent rhythm and responsive edge padding.
+//
+// Note: PrimeNG components put their theming class (e.g. "p-card") on an
+// *inner* div, not on the host tag itself - the host element in the DOM is
+// literally <p-card>, with no class of its own. So this must select the
+// component tag names directly (p-card, p-skeleton), not ".p-card" - the
+// class selector silently never matches, which is what let every card on
+// every page collapse together with zero gap between them.
+.page-container {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  > p-card, > p-skeleton, > .grid, > .page-header {
+    margin-bottom: 1.25rem;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .page-container {
+    padding: 1rem;
+    padding-bottom: 6rem; // clear the fixed bottom nav
+  }
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.page-header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+// --- Semantic amount colors, reused wherever money is shown as in/out/due ---
+// Single mid-tone step so contrast holds on both light and dark surfaces.
+.text-negative { color: var(--p-red-500); }
+.text-positive { color: var(--p-green-500); }
+.text-due { color: var(--p-orange-500); font-weight: 600; }
+
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.stat-label {
+  font-size: 0.82rem;
+  color: var(--p-text-muted-color);
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--p-text-muted-color);
+  text-decoration: none;
+  font-size: 0.85rem;
+  margin-bottom: 0.35rem;
+}
+
+.back-link:hover {
+  color: var(--p-primary-color);
+}
+
+.financial-summary {
+  max-width: 520px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--p-content-border-color);
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-total {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.summary-profit {
+  font-weight: 800;
+  font-size: 1.3rem;
+  border-bottom: none;
+}
+
+// --- Empty states: centered icon + message + optional CTA, used inside a p-card ---
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  padding: 2.5rem 1rem;
+  color: var(--p-text-muted-color);
+}
+
+.empty-state i {
+  font-size: 2rem;
+  color: var(--p-text-muted-color);
+}
+
+.empty-state p {
+  margin: 0;
+}
+
+// --- Form field pattern shared by every dialog ---
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  // PrimeFlex ships its own .field utility with margin-bottom: 1rem - that
+  // extra 16px silently double-spaced every dialog (on top of the flex
+  // gap already used there) and, worse, threw off align-items:end in
+  // filter-bar rows: a field's true (margin) bottom sat 16px below its
+  // visible input, so a plain sibling button aligned to that phantom edge
+  // instead of the input itself. Zero it out - spacing here is intentionally
+  // owned by the parent's flex `gap`, not by this class.
+  margin-bottom: 0;
+}
+
+.field > label {
+  font-weight: 500;
+  font-size: 0.85rem;
+  color: var(--p-text-color);
+}

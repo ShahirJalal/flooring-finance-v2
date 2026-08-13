@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Flooring Job Profit Calculator</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <script>
+    // Applies .app-dark synchronously, before Angular/PrimeNG CSS loads, so
+    // there's no flash of the wrong theme. Keep the storage key, class name
+    // and default logic identical to ThemeService.
+    (function () {
+      var stored = localStorage.getItem('ff-theme');
+      var dark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (dark) document.documentElement.classList.add('app-dark');
+    })();
+  </script>
+  <style>
+    /* Plain hex fallback, not a CSS var - PrimeNG's theme CSS hasn't loaded at first paint. */
+    body { background: #f4f6f8; }
+    html.app-dark body { background: #0f172a; }
+  </style>
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>

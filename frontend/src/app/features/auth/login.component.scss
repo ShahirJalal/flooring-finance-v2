@@ -8,6 +8,18 @@
   padding: 1rem;
 }
 
+// On a phone, a form centered against the *full* height fights the
+// on-screen keyboard - tapping into a field can shove the card (and the
+// input you're typing into) up awkwardly once the keyboard eats the bottom
+// of the viewport. Anchoring near the top avoids that, same as most
+// mobile-optimized sign-in forms do (Cloudflare's own included).
+@media (max-width: 767px) {
+  .login-page {
+    align-items: flex-start;
+    padding-top: 4rem;
+  }
+}
+
 .login-page__theme-toggle {
   position: absolute;
   top: 1rem;

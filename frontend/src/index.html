@@ -24,9 +24,10 @@
   <style>
     /* Plain hex fallbacks (not PrimeNG tokens, which aren't defined this
        early) so the very first paint - before PrimeNG's runtime theme CSS
-       has loaded - already matches the mode the inline script above picked. */
-    html:not(.app-dark) body { background: #f4f6f8; }
-    html.app-dark body { background: #0d1117; }
+       has loaded - already matches the mode the inline script above picked.
+       Keep these in sync with --app-page-bg in styles.scss. */
+    html:not(.app-dark) body { background: #f7f7f8; }
+    html.app-dark body { background: #0a0a0a; }
   </style>
 </head>
 <body>

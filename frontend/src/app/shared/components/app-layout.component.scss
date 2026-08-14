@@ -14,7 +14,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  background: var(--p-content-background);
+  // The page shade, not the card/surface one - Cloudflare's own top bar and
+  // sidebar sit flush with the page rather than reading as a raised panel.
+  background: var(--app-page-bg);
   border-bottom: 1px solid var(--p-content-border-color);
   padding: 0.6rem 1rem;
   position: sticky;

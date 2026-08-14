@@ -10,12 +10,54 @@
   box-sizing: border-box;
 }
 
+// --- Two-layer background system, studied off Cloudflare's dashboard: the
+// page/sidebar sits on one shade, cards and panels sit on a second, slightly
+// lighter (or, in dark mode, slightly lighter-on-black) shade, with a
+// hairline border marking the edge between them. Aura's default theme uses
+// the *same* token for both, which is why cards used to blend invisibly
+// into the page once shadows were flattened - these two tokens exist
+// specifically to keep that boundary visible without a shadow. ---
+:root {
+  --app-page-bg: #f7f7f8;
+  --app-surface-bg: #ffffff;
+}
+
+html.app-dark {
+  --app-page-bg: #0a0a0a;
+  --app-surface-bg: #141414;
+}
+
 html, body {
   height: 100%;
   margin: 0;
   font-family: 'Inter Variable', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  background: var(--p-content-background);
+  background: var(--app-page-bg);
   color: var(--p-text-color);
+}
+
+// PrimeNG's own card/dialog stylesheet sets `background` itself (Aura has
+// no border token for either, so the border here is a plain addition, not
+// an override) - the !important on background is needed because PrimeNG's
+// theme CSS is injected at runtime and isn't reliably guaranteed to load
+// before this stylesheet, so normal cascade order can't be trusted here.
+.p-card, .p-dialog {
+  background: var(--app-surface-bg) !important;
+  border: 1px solid var(--p-content-border-color);
+}
+
+// However wide a dialog asks to be via its own [style] input, it can never
+// exceed the viewport minus a consistent gutter - so it always keeps some
+// breathing room off the screen edges on any device, without every dialog
+// needing to hardcode its own mobile-width case.
+.p-dialog {
+  max-width: calc(100vw - 2rem);
+}
+
+// The table's header band reads as a distinct third shade against the
+// (white/near-black) card it sits in, matching the banded header bar in
+// Cloudflare's own tables.
+.p-datatable-thead {
+  background: var(--app-page-bg);
 }
 
 // PrimeNG's component selectors (p-card, p-table, ...) are custom element

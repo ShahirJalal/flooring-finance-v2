@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, HostListener, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -53,6 +53,22 @@ export class JobListComponent implements OnInit {
   ];
   readonly expenseCategoryOptions = ENTRY_CATEGORIES.filter(c => c.value !== 'INCOME');
   readonly incomeCategoryOptions = ENTRY_CATEGORIES.filter(c => c.value === 'INCOME');
+
+  /**
+   * Fewer numbered page links on a narrow screen so First/Prev/.../Next/Last
+   * never wraps onto a second line - recalculated on resize rather than a
+   * single fixed count for every screen size.
+   */
+  readonly pageLinkCount = signal(this.computePageLinkCount());
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.pageLinkCount.set(this.computePageLinkCount());
+  }
+
+  private computePageLinkCount(): number {
+    return window.innerWidth < 500 ? 3 : 5;
+  }
 
   /** Everything he's typed before, for the entry-description autocomplete. */
   private suggestions: EntrySuggestion[] = [];

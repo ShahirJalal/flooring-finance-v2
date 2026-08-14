@@ -22,3 +22,59 @@
   align-self: flex-start;
   color: var(--p-text-muted-color);
 }
+
+// --- Below 640px, each row becomes a small card instead of a horizontally
+// scrolling table row: name/customer on top, date and profit inline below,
+// delete icon pinned top-right. The header is redundant once rows read
+// like cards, so it's hidden at the same breakpoint. ---
+@media (max-width: 639px) {
+  // .p-datatable-thead is PrimeNG's own generated wrapper (not part of this
+  // component's template), so reaching it needs ::ng-deep; .job-row and its
+  // .col-* children below are our own markup and don't.
+  :host ::ng-deep .p-datatable-thead {
+    display: none;
+  }
+
+  .job-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: auto auto;
+    column-gap: 0.5rem;
+    row-gap: 0.25rem;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--p-content-border-color);
+  }
+
+  .job-row > td {
+    display: block;
+    padding: 0;
+    border: none;
+  }
+
+  .col-job {
+    grid-column: 1 / span 2;
+    grid-row: 1;
+  }
+
+  .col-actions {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .col-date {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: end;
+    color: var(--p-text-muted-color);
+    font-size: 0.85rem;
+  }
+
+  .col-profit {
+    grid-column: 2 / span 2;
+    grid-row: 2;
+    justify-self: start;
+    align-self: end;
+    font-size: 0.85rem;
+  }
+}

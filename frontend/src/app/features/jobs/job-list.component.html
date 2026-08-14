@@ -5,7 +5,7 @@
   </div>
 
   <p-card>
-    <p-table [value]="jobs()" [loading]="loading()" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+    <p-table [value]="jobs()" [loading]="loading()" [paginator]="true" [rows]="5" [pageLinks]="pageLinkCount()" responsiveLayout="scroll">
       <ng-template pTemplate="header">
         <tr>
           <th>Job</th>
@@ -15,19 +15,19 @@
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-job>
-        <tr class="cursor-pointer" [routerLink]="['/jobs', job.id]">
-          <td>
+        <tr class="cursor-pointer job-row" [routerLink]="['/jobs', job.id]">
+          <td class="col-job">
             <div class="job-name">{{ job.name }}</div>
             @if (job.customerName) {
               <div class="job-customer">{{ job.customerName }}</div>
             }
           </td>
-          <td>{{ job.jobDate ? (job.jobDate | date: 'dd/MM/yyyy') : '-' }}</td>
-          <td [class.text-negative]="job.profit < 0" [class.text-positive]="job.profit >= 0">
+          <td class="col-date">{{ job.jobDate ? (job.jobDate | date: 'dd/MM/yyyy') : '-' }}</td>
+          <td class="col-profit" [class.text-negative]="job.profit < 0" [class.text-positive]="job.profit >= 0">
             <i class="pi" [class.pi-arrow-down]="job.profit < 0" [class.pi-arrow-up]="job.profit >= 0"></i>
             {{ job.profit | myr }}
           </td>
-          <td (click)="$event.stopPropagation()">
+          <td class="col-actions" (click)="$event.stopPropagation()">
             <button pButton type="button" icon="pi pi-trash" [text]="true" severity="danger" size="small" pTooltip="Delete job" tooltipPosition="left" (click)="remove(job)"></button>
           </td>
         </tr>

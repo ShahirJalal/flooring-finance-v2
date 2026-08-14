@@ -1,18 +1,10 @@
 package com.flooring.finance.entity;
 
-import com.flooring.finance.common.JobStatus;
-import com.flooring.finance.common.MalaysianState;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder.Default;
 import lombok.Getter;
@@ -21,8 +13,14 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 /**
- * The central (and only major) entity in this system. Everything financial
- * hangs off a job: a single "Collection" amount plus five cost buckets.
+ * The central (and only) entity in this system. A job is just a job that
+ * happened - a name, when, a price, and three cost totals (Materials,
+ * Worker, Other) the owner fills in himself, rather than itemized
+ * purchase-by-purchase records. No status, no state - neither affects the
+ * profit math, and both turned out to be decisions the owner never asked to
+ * make. Worker cost carries its rate/day and day-count alongside the total
+ * purely so the form can redisplay and re-edit that calculation later - the
+ * total (workerCost) is always what actually feeds the profit math.
  */
 @Getter
 @Setter
@@ -42,17 +40,8 @@ public class Job extends BaseEntity {
     @Column(length = 255)
     private String location;
 
-    @Enumerated(EnumType.STRING)
-    @Column(length = 30)
-    private MalaysianState state;
-
     @Column(name = "job_date")
     private LocalDate jobDate;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
-    @Default
-    private JobStatus status = JobStatus.IN_PROGRESS;
 
     @Column(columnDefinition = "text")
     private String notes;
@@ -66,23 +55,22 @@ public class Job extends BaseEntity {
     @Default
     private BigDecimal collectionAmount = BigDecimal.ZERO;
 
+    @Column(name = "materials_cost", nullable = false, precision = 12, scale = 2)
     @Default
-    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MaterialCost> materialCosts = new ArrayList<>();
+    private BigDecimal materialsCost = BigDecimal.ZERO;
 
-    @Default
-    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DeliveryCost> deliveryCosts = new ArrayList<>();
+    /** Optional calculator inputs behind workerCost - purely for redisplay/editing, never read for the profit math. */
+    @Column(name = "worker_rate_per_day", precision = 12, scale = 2)
+    private BigDecimal workerRatePerDay;
 
-    @Default
-    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OtherCost> otherCosts = new ArrayList<>();
+    @Column(name = "worker_days")
+    private Integer workerDays;
 
+    @Column(name = "worker_cost", nullable = false, precision = 12, scale = 2)
     @Default
-    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<WorkerCost> workerCosts = new ArrayList<>();
+    private BigDecimal workerCost = BigDecimal.ZERO;
 
+    @Column(name = "other_costs", nullable = false, precision = 12, scale = 2)
     @Default
-    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<WorkerFoodCost> workerFoodCosts = new ArrayList<>();
+    private BigDecimal otherCosts = BigDecimal.ZERO;
 }

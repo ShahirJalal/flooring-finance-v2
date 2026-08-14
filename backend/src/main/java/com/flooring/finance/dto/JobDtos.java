@@ -1,15 +1,33 @@
 package com.flooring.finance.dto;
 
+import com.flooring.finance.common.EntryCategory;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 
 public final class JobDtos {
 
     private JobDtos() {
+    }
+
+    public record JobEntryRequest(
+            @NotNull EntryCategory category,
+            String description,
+            @NotNull @Positive BigDecimal amount
+    ) {
+    }
+
+    public record JobEntryResponse(
+            Long id,
+            EntryCategory category,
+            String description,
+            BigDecimal amount
+    ) {
     }
 
     public record JobRequest(
@@ -18,12 +36,7 @@ public final class JobDtos {
             String location,
             LocalDate jobDate,
             String notes,
-            @NotNull @PositiveOrZero BigDecimal collectionAmount,
-            @NotNull @PositiveOrZero BigDecimal materialsCost,
-            BigDecimal workerRatePerDay,
-            Integer workerDays,
-            @NotNull @PositiveOrZero BigDecimal workerCost,
-            @NotNull @PositiveOrZero BigDecimal otherCosts
+            @NotNull List<@Valid JobEntryRequest> entries
     ) {
     }
 
@@ -33,16 +46,14 @@ public final class JobDtos {
             String name,
             String customerName,
             LocalDate jobDate,
-            BigDecimal collectionAmount,
-            BigDecimal totalCost,
             BigDecimal profit
     ) {
     }
 
     /**
-     * The full job detail payload: job info and the computed financial
-     * summary. All totals come from JobCalculationService, never computed
-     * on the frontend.
+     * The full job detail payload: job info, its entries, and the computed
+     * financial summary. Totals always come from JobCalculationService,
+     * never computed on the frontend.
      */
     public record JobResponse(
             Long id,
@@ -51,12 +62,8 @@ public final class JobDtos {
             String location,
             LocalDate jobDate,
             String notes,
-            BigDecimal collectionAmount,
-            BigDecimal materialsCost,
-            BigDecimal workerRatePerDay,
-            Integer workerDays,
-            BigDecimal workerCost,
-            BigDecimal otherCosts,
+            List<JobEntryResponse> entries,
+            BigDecimal totalIncome,
             BigDecimal totalCost,
             BigDecimal profit,
             Instant createdAt,

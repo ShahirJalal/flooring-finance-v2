@@ -1,19 +1,11 @@
 package com.flooring.finance.dto;
 
-import com.flooring.finance.common.JobStatus;
-import com.flooring.finance.common.MalaysianState;
-import com.flooring.finance.dto.DeliveryCostDtos.DeliveryCostResponse;
-import com.flooring.finance.dto.MaterialCostDtos.MaterialCostResponse;
-import com.flooring.finance.dto.OtherCostDtos.OtherCostResponse;
-import com.flooring.finance.dto.WorkerCostDtos.WorkerCostResponse;
-import com.flooring.finance.dto.WorkerFoodCostDtos.WorkerFoodCostResponse;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.List;
 
 public final class JobDtos {
 
@@ -24,34 +16,32 @@ public final class JobDtos {
             @NotBlank String name,
             String customerName,
             String location,
-            MalaysianState state,
             LocalDate jobDate,
-            JobStatus status,
             String notes,
-            @NotNull @PositiveOrZero BigDecimal collectionAmount
+            @NotNull @PositiveOrZero BigDecimal collectionAmount,
+            @NotNull @PositiveOrZero BigDecimal materialsCost,
+            BigDecimal workerRatePerDay,
+            Integer workerDays,
+            @NotNull @PositiveOrZero BigDecimal workerCost,
+            @NotNull @PositiveOrZero BigDecimal otherCosts
     ) {
     }
 
-    /** Lightweight row for the Jobs list and dashboard's recent-jobs list. */
+    /** Lightweight row for the Jobs list. */
     public record JobSummaryResponse(
             Long id,
             String name,
             String customerName,
-            String location,
-            MalaysianState state,
             LocalDate jobDate,
-            JobStatus status,
             BigDecimal collectionAmount,
             BigDecimal totalCost,
-            BigDecimal profit,
-            BigDecimal profitMarginPercent
+            BigDecimal profit
     ) {
     }
 
     /**
-     * The full job detail payload: job info, every cost line item, and the
-     * computed financial summary - everything the job detail page needs in
-     * one call. All totals come from JobCalculationService, never computed
+     * The full job detail payload: job info and the computed financial
+     * summary. All totals come from JobCalculationService, never computed
      * on the frontend.
      */
     public record JobResponse(
@@ -59,24 +49,16 @@ public final class JobDtos {
             String name,
             String customerName,
             String location,
-            MalaysianState state,
             LocalDate jobDate,
-            JobStatus status,
             String notes,
             BigDecimal collectionAmount,
-            List<MaterialCostResponse> materialCosts,
-            List<DeliveryCostResponse> deliveryCosts,
-            List<OtherCostResponse> otherCosts,
-            List<WorkerCostResponse> workerCosts,
-            List<WorkerFoodCostResponse> workerFoodCosts,
-            BigDecimal materialsTotal,
-            BigDecimal deliveryTotal,
-            BigDecimal otherCostsTotal,
-            BigDecimal workerSalaryTotal,
-            BigDecimal workerFoodTotal,
+            BigDecimal materialsCost,
+            BigDecimal workerRatePerDay,
+            Integer workerDays,
+            BigDecimal workerCost,
+            BigDecimal otherCosts,
             BigDecimal totalCost,
             BigDecimal profit,
-            BigDecimal profitMarginPercent,
             Instant createdAt,
             Instant updatedAt
     ) {

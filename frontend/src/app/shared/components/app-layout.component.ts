@@ -3,16 +3,17 @@ import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { AuthService } from '../../core/auth/auth.service';
+import { ThemeToggleButtonComponent } from '../theme-toggle/theme-toggle-button.component';
 
 /**
- * The entire app shell: a brand mark, Settings, and Logout. No sidebar, no
- * bottom nav - there's only one real screen (Jobs), so there's nothing to
- * navigate between.
+ * The entire app shell: a brand mark, theme toggle, Settings, and Logout.
+ * No sidebar, no bottom nav - there's only one real screen (Jobs), so
+ * there's nothing to navigate between.
  */
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, ButtonModule, TooltipModule],
+  imports: [RouterOutlet, RouterLink, ButtonModule, TooltipModule, ThemeToggleButtonComponent],
   templateUrl: './app-layout.component.html',
   styleUrl: './app-layout.component.scss',
 })

@@ -1,22 +1,12 @@
 package com.flooring.finance.seed;
 
-import com.flooring.finance.common.JobStatus;
-import com.flooring.finance.common.MalaysianState;
-import com.flooring.finance.entity.DeliveryCost;
 import com.flooring.finance.entity.Job;
-import com.flooring.finance.entity.MaterialCost;
-import com.flooring.finance.entity.OtherCost;
 import com.flooring.finance.entity.User;
-import com.flooring.finance.entity.WorkerCost;
-import com.flooring.finance.entity.WorkerFoodCost;
 import com.flooring.finance.repository.JobRepository;
 import com.flooring.finance.repository.UserRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -27,11 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Development-only seed data: five hand-written flooring jobs (used
  * throughout the docs/screenshots) plus a larger batch of programmatically
- * generated ones spread across the last ~20 months, so the dashboard,
- * job list and reports all read like a real, ongoing business rather than a
- * handful of demo rows. Runs only under the "dev" profile and only if the
- * database is empty. Generation is seeded ({@link #RANDOM}) so the dataset
- * is identical on every fresh run.
+ * generated ones spread across the last ~20 months, so the job list reads
+ * like a real, ongoing business rather than a handful of demo rows. Runs
+ * only under the "dev" profile and only if the database is empty.
+ * Generation is seeded ({@link #RANDOM}) so the dataset is identical on
+ * every fresh run.
  * <p>
  * <b>Seed login (development only - never used in production):</b>
  * username {@code owner}, password {@code ChangeMe123!}.
@@ -77,170 +67,87 @@ public class DataSeeder implements CommandLineRunner {
 
     // ------------------------------------------------------------------
     // Five hand-written jobs - referenced by the README and screenshots.
+    // Totals match what earlier versions of this app produced.
     // ------------------------------------------------------------------
 
     private void seedTamanMelawati() {
-        Job job = Job.builder()
+        jobRepository.save(Job.builder()
                 .name("Taman Melawati House")
                 .customerName("Ahmad")
                 .location("Taman Melawati, Kuala Lumpur")
-                .state(MalaysianState.KUALA_LUMPUR)
                 .jobDate(LocalDate.of(2026, 5, 15))
-                .status(JobStatus.COMPLETED)
                 .notes("500 sq ft SPC vinyl plank, living and dining area.")
-                .collectionAmount(new BigDecimal("15000.00"))
-                .build();
-
-        addMaterial(job, "Flooring", "6000.00");
-        addMaterial(job, "Glue", "300.00");
-        addMaterial(job, "Underlay", "200.00");
-
-        addDelivery(job, "Lalamove", "250.00", LocalDate.of(2026, 5, 14));
-        addDelivery(job, "Other Delivery", "200.00", LocalDate.of(2026, 5, 16));
-
-        addOther(job, "Petrol", "150.00", "Petrol", LocalDate.of(2026, 5, 15));
-        addOther(job, "Guni", "30.00", "Supplies", LocalDate.of(2026, 5, 15));
-        addOther(job, "Parking", "20.00", "Parking", LocalDate.of(2026, 5, 15));
-        addOther(job, "Miscellaneous", "50.00", "Other", LocalDate.of(2026, 5, 15));
-
-        addWorker(job, "Ali", "500.00");
-        addWorker(job, "Abu", "500.00");
-        addWorker(job, "Rahman", "400.00");
-
-        addFood(job, LocalDate.of(2026, 5, 15), "80.00");
-        addFood(job, LocalDate.of(2026, 5, 16), "80.00");
-        addFood(job, LocalDate.of(2026, 5, 17), "80.00");
-
-        jobRepository.save(job);
+                .collectionAmount(amt("15000.00"))
+                .materialsCost(amt("6500.00"))
+                .workerRatePerDay(amt("466.67"))
+                .workerDays(3)
+                .workerCost(amt("1400.00"))
+                .otherCosts(amt("940.00"))
+                .build());
     }
 
     private void seedShahAlamOffice() {
-        Job job = Job.builder()
+        jobRepository.save(Job.builder()
                 .name("Shah Alam Office")
                 .customerName("Tan Wei Ming")
                 .location("Seksyen 15, Shah Alam")
-                .state(MalaysianState.SELANGOR)
                 .jobDate(LocalDate.of(2026, 6, 10))
-                .status(JobStatus.COMPLETED)
                 .notes("Office renovation - laminate flooring throughout.")
-                .collectionAmount(new BigDecimal("20000.00"))
-                .build();
-
-        addMaterial(job, "Laminate Flooring", "8500.00");
-        addMaterial(job, "Adhesive & Underlay", "500.00");
-
-        addDelivery(job, "Lalamove", "500.00", LocalDate.of(2026, 6, 9));
-        addDelivery(job, "Lorry Rental", "300.00", LocalDate.of(2026, 6, 9));
-
-        addOther(job, "Petrol", "200.00", "Petrol", LocalDate.of(2026, 6, 10));
-        addOther(job, "Parking", "100.00", "Parking", LocalDate.of(2026, 6, 10));
-        addOther(job, "Tools", "200.00", "Tools", LocalDate.of(2026, 6, 11));
-
-        addWorker(job, "Ali", "800.00");
-        addWorker(job, "Abu", "800.00");
-        addWorker(job, "Rahman", "800.00");
-        addWorker(job, "Kumar", "800.00");
-
-        addFood(job, LocalDate.of(2026, 6, 10), "120.00");
-        addFood(job, LocalDate.of(2026, 6, 11), "120.00");
-        addFood(job, LocalDate.of(2026, 6, 12), "120.00");
-        addFood(job, LocalDate.of(2026, 6, 13), "140.00");
-
-        jobRepository.save(job);
+                .collectionAmount(amt("20000.00"))
+                .materialsCost(amt("9000.00"))
+                .workerRatePerDay(amt("800.00"))
+                .workerDays(4)
+                .workerCost(amt("3200.00"))
+                .otherCosts(amt("1800.00"))
+                .build());
     }
 
     private void seedKajangHouse() {
-        Job job = Job.builder()
+        jobRepository.save(Job.builder()
                 .name("Kajang House")
                 .customerName("Siti Rahman")
                 .location("Bandar Kajang, Selangor")
-                .state(MalaysianState.SELANGOR)
                 .jobDate(LocalDate.of(2026, 7, 5))
-                .status(JobStatus.COMPLETED)
                 .notes("Vinyl flooring for 3-bedroom house.")
-                .collectionAmount(new BigDecimal("13500.00"))
-                .build();
-
-        addMaterial(job, "SPC Vinyl Plank", "5000.00");
-        addMaterial(job, "Underlay", "500.00");
-
-        addDelivery(job, "Lalamove", "300.00", LocalDate.of(2026, 7, 4));
-
-        addOther(job, "Petrol", "100.00", "Petrol", LocalDate.of(2026, 7, 5));
-        addOther(job, "Guni", "20.00", "Supplies", LocalDate.of(2026, 7, 5));
-        addOther(job, "Miscellaneous", "80.00", "Other", LocalDate.of(2026, 7, 6));
-
-        addWorker(job, "Ali", "700.00");
-        addWorker(job, "Abu", "700.00");
-        addWorker(job, "Rahman", "600.00");
-
-        addFood(job, LocalDate.of(2026, 7, 5), "180.00");
-        addFood(job, LocalDate.of(2026, 7, 6), "180.00");
-
-        jobRepository.save(job);
+                .collectionAmount(amt("13500.00"))
+                .materialsCost(amt("5500.00"))
+                .workerRatePerDay(amt("666.67"))
+                .workerDays(3)
+                .workerCost(amt("2000.00"))
+                .otherCosts(amt("860.00"))
+                .build());
     }
 
     private void seedSerembanShop() {
-        Job job = Job.builder()
+        jobRepository.save(Job.builder()
                 .name("Seremban Shop")
                 .customerName("Lim Kok Wei")
                 .location("Seremban 2, Negeri Sembilan")
-                .state(MalaysianState.NEGERI_SEMBILAN)
                 .jobDate(LocalDate.of(2026, 8, 1))
-                .status(JobStatus.IN_PROGRESS)
                 .notes("Retail shop lot - homogeneous tile flooring. Deposit collected, work ongoing.")
-                .collectionAmount(new BigDecimal("18000.00"))
-                .build();
-
-        addMaterial(job, "Homogeneous Tiles", "6500.00");
-        addMaterial(job, "Tile Adhesive & Grout", "500.00");
-
-        addDelivery(job, "Lalamove", "400.00", LocalDate.of(2026, 7, 31));
-
-        addOther(job, "Petrol", "150.00", "Petrol", LocalDate.of(2026, 8, 1));
-        addOther(job, "Parking", "50.00", "Parking", LocalDate.of(2026, 8, 1));
-        addOther(job, "Toll", "100.00", "Other", LocalDate.of(2026, 8, 1));
-
-        addWorker(job, "Ali", "600.00");
-        addWorker(job, "Rahman", "600.00");
-        addWorker(job, "Kumar", "600.00");
-
-        addFood(job, LocalDate.of(2026, 8, 1), "90.00");
-        addFood(job, LocalDate.of(2026, 8, 2), "90.00");
-
-        jobRepository.save(job);
+                .collectionAmount(amt("18000.00"))
+                .materialsCost(amt("7000.00"))
+                .workerRatePerDay(amt("600.00"))
+                .workerDays(3)
+                .workerCost(amt("1800.00"))
+                .otherCosts(amt("880.00"))
+                .build());
     }
 
     private void seedJohorBahruProject() {
-        Job job = Job.builder()
+        jobRepository.save(Job.builder()
                 .name("Johor Bahru Project")
                 .customerName("Rajesh Kumar")
                 .location("Taman Molek, Johor Bahru")
-                .state(MalaysianState.JOHOR)
                 .jobDate(LocalDate.of(2026, 8, 8))
-                .status(JobStatus.IN_PROGRESS)
                 .notes("Commercial unit - parquet flooring for reception and offices.")
-                .collectionAmount(new BigDecimal("22000.00"))
-                .build();
-
-        addMaterial(job, "Solid Parquet", "9500.00");
-        addMaterial(job, "Finishing & Adhesive", "500.00");
-
-        addDelivery(job, "Lalamove", "350.00", LocalDate.of(2026, 8, 7));
-        addDelivery(job, "Lorry Rental", "250.00", LocalDate.of(2026, 8, 7));
-
-        addOther(job, "Petrol", "220.00", "Petrol", LocalDate.of(2026, 8, 8));
-        addOther(job, "Toll", "80.00", "Other", LocalDate.of(2026, 8, 8));
-        addOther(job, "Miscellaneous", "100.00", "Other", LocalDate.of(2026, 8, 9));
-
-        addWorker(job, "Ali", "900.00");
-        addWorker(job, "Abu", "900.00");
-        addWorker(job, "Rahman", "700.00");
-
-        addFood(job, LocalDate.of(2026, 8, 8), "150.00");
-        addFood(job, LocalDate.of(2026, 8, 9), "150.00");
-
-        jobRepository.save(job);
+                .collectionAmount(amt("22000.00"))
+                .materialsCost(amt("10000.00"))
+                .workerRatePerDay(amt("833.33"))
+                .workerDays(3)
+                .workerCost(amt("2500.00"))
+                .otherCosts(amt("1300.00"))
+                .build());
     }
 
     // ------------------------------------------------------------------
@@ -259,43 +166,20 @@ public class DataSeeder implements CommandLineRunner {
             "Anitha Rajoo", "Hasnah Daud", "Koh Boon Lay", "Faridah Merican", "Sivakumar",
         };
 
-    private static final Map<MalaysianState, String[]> LOCATIONS_BY_STATE = buildLocations();
-
-    private static Map<MalaysianState, String[]> buildLocations() {
-        Map<MalaysianState, String[]> m = new EnumMap<>(MalaysianState.class);
-        m.put(MalaysianState.JOHOR, new String[]{"Skudai", "Batu Pahat", "Muar", "Kulai", "Taman Molek, Johor Bahru"});
-        m.put(MalaysianState.KEDAH, new String[]{"Alor Setar", "Sungai Petani", "Kulim"});
-        m.put(MalaysianState.KELANTAN, new String[]{"Kota Bharu", "Pasir Mas"});
-        m.put(MalaysianState.MELAKA, new String[]{"Melaka City", "Ayer Keroh", "Alor Gajah"});
-        m.put(MalaysianState.NEGERI_SEMBILAN, new String[]{"Seremban 2, Negeri Sembilan", "Nilai", "Port Dickson"});
-        m.put(MalaysianState.PAHANG, new String[]{"Kuantan", "Temerloh", "Bentong"});
-        m.put(MalaysianState.PENANG, new String[]{"George Town", "Bayan Lepas", "Butterworth", "Bukit Mertajam"});
-        m.put(MalaysianState.PERAK, new String[]{"Ipoh", "Taiping", "Sitiawan"});
-        m.put(MalaysianState.PERLIS, new String[]{"Kangar"});
-        m.put(MalaysianState.SABAH, new String[]{"Kota Kinabalu", "Sandakan"});
-        m.put(MalaysianState.SARAWAK, new String[]{"Kuching", "Miri"});
-        m.put(MalaysianState.SELANGOR, new String[]{"Shah Alam", "Petaling Jaya", "Subang Jaya", "Klang", "Kajang", "Cheras", "Puchong", "Rawang"});
-        m.put(MalaysianState.TERENGGANU, new String[]{"Kuala Terengganu", "Dungun"});
-        m.put(MalaysianState.KUALA_LUMPUR, new String[]{"Bukit Bintang", "Ampang", "Setapak", "Taman Melawati, Kuala Lumpur", "Bangsar", "Cheras KL"});
-        m.put(MalaysianState.LABUAN, new String[]{"Labuan"});
-        m.put(MalaysianState.PUTRAJAYA, new String[]{"Putrajaya"});
-        return m;
-    }
-
-    // Peninsular Malaysia only, matching this business's documented coverage
-    // (Settings -> Business Defaults) - Sabah, Sarawak and Labuan are real
-    // MalaysianState values (a job could still be entered there by hand) but
-    // the generator shouldn't invent jobs outside where the business operates.
-    private static final MalaysianState[] STATES = {
-            MalaysianState.JOHOR, MalaysianState.KEDAH, MalaysianState.KELANTAN, MalaysianState.MELAKA,
-            MalaysianState.NEGERI_SEMBILAN, MalaysianState.PAHANG, MalaysianState.PENANG, MalaysianState.PERAK,
-            MalaysianState.PERLIS, MalaysianState.SELANGOR, MalaysianState.TERENGGANU, MalaysianState.KUALA_LUMPUR,
-            MalaysianState.PUTRAJAYA,
+    // Peninsular Malaysia towns, matching this business's coverage.
+    private static final String[] LOCATIONS = {
+            "Skudai", "Batu Pahat", "Muar", "Kulai", "Taman Molek, Johor Bahru",
+            "Alor Setar", "Sungai Petani", "Kulim", "Kota Bharu", "Pasir Mas",
+            "Melaka City", "Ayer Keroh", "Alor Gajah", "Seremban 2, Negeri Sembilan", "Nilai", "Port Dickson",
+            "Kuantan", "Temerloh", "Bentong", "George Town", "Bayan Lepas", "Butterworth", "Bukit Mertajam",
+            "Ipoh", "Taiping", "Sitiawan", "Kangar", "Shah Alam", "Petaling Jaya", "Subang Jaya",
+            "Klang", "Kajang", "Cheras", "Puchong", "Rawang", "Kuala Terengganu", "Dungun",
+            "Bukit Bintang", "Ampang", "Setapak", "Taman Melawati, Kuala Lumpur", "Bangsar", "Cheras KL", "Putrajaya",
     };
 
     private static final String[] JOB_KINDS = {"House", "Office", "Shop", "Condo", "Apartment", "Renovation", "Terrace House", "Bungalow"};
 
-    /** Flooring type -> [material line description, notes fragment]. */
+    /** Flooring type -> notes fragment. */
     private static final String[][] FLOORING_TYPES = {
             {"SPC Vinyl Plank", "SPC vinyl plank flooring"},
             {"Laminate Flooring", "laminate flooring"},
@@ -312,22 +196,11 @@ public class DataSeeder implements CommandLineRunner {
             "reception and offices", "retail floor", "kitchen and utility area", "common areas",
     };
 
-    private static final String[] WORKER_NAMES = {
-            "Ali", "Abu", "Rahman", "Kumar", "Hafiz", "Zul", "Azman", "Faizal", "Chong", "Wei", "Suresh", "Hakim", "Farid", "Din",
-    };
-
-    private static final String[][] OTHER_COST_TEMPLATES = {
-            {"Petrol", "Petrol"}, {"Parking", "Parking"}, {"Toll", "Other"}, {"Tools", "Tools"},
-            {"Guni / Supplies", "Supplies"}, {"Utilities", "Utilities"}, {"Miscellaneous", "Other"},
-    };
-
     private void seedGeneratedJobs(int count) {
         LocalDate today = LocalDate.now();
 
         for (int i = 0; i < count; i++) {
-            MalaysianState state = STATES[RANDOM.nextInt(STATES.length)];
-            String[] locations = LOCATIONS_BY_STATE.get(state);
-            String location = locations[RANDOM.nextInt(locations.length)];
+            String location = LOCATIONS[RANDOM.nextInt(LOCATIONS.length)];
             String kind = JOB_KINDS[RANDOM.nextInt(JOB_KINDS.length)];
             String customer = CUSTOMER_NAMES[RANDOM.nextInt(CUSTOMER_NAMES.length)];
             String[] flooring = FLOORING_TYPES[RANDOM.nextInt(FLOORING_TYPES.length)];
@@ -336,82 +209,34 @@ public class DataSeeder implements CommandLineRunner {
             int daysAgo = RANDOM.nextInt(610); // spread across ~20 months
             LocalDate jobDate = today.minusDays(daysAgo);
 
-            JobStatus status;
-            if (daysAgo <= 21) {
-                double r = RANDOM.nextDouble();
-                status = r < 0.55 ? JobStatus.IN_PROGRESS : (r < 0.90 ? JobStatus.COMPLETED : JobStatus.CANCELLED);
-            } else {
-                status = RANDOM.nextDouble() < 0.92 ? JobStatus.COMPLETED : JobStatus.CANCELLED;
-            }
-
-            // Job "size" tier drives every other amount so costs stay proportionate.
             BigDecimal collection = randomRoundAmount(6000, 45000);
             int sqft = 300 + RANDOM.nextInt(1400);
+
+            BigDecimal materialsCost = pct(collection, 0.32, 0.45);
+
+            int workerDays = 1 + RANDOM.nextInt(6);
+            BigDecimal workerRatePerDay = randomRoundAmount(80, 250);
+            BigDecimal workerCost = workerRatePerDay.multiply(BigDecimal.valueOf(workerDays)).setScale(2, RoundingMode.HALF_UP);
+
+            // Covers what used to be delivery + other + worker food, combined into one bucket.
+            BigDecimal otherCosts = pct(collection, 0.03, 0.08);
 
             Job job = Job.builder()
                     .name(location + " " + kind)
                     .customerName(customer)
                     .location(location)
-                    .state(state)
                     .jobDate(jobDate)
-                    .status(status)
                     .notes(sqft + " sq ft " + flooring[1] + ", " + area + ".")
                     .collectionAmount(collection)
+                    .materialsCost(materialsCost)
+                    .workerRatePerDay(workerRatePerDay)
+                    .workerDays(workerDays)
+                    .workerCost(workerCost)
+                    .otherCosts(otherCosts)
                     .build();
-
-            // Materials: 1-3 line items summing to ~32-45% of collection.
-            BigDecimal materialsTotal = pct(collection, 0.32, 0.45);
-            List<BigDecimal> materialSplits = splitAmount(materialsTotal, 1 + RANDOM.nextInt(3));
-            addMaterial(job, flooring[0], materialSplits.get(0).toPlainString());
-            if (materialSplits.size() > 1) {
-                addMaterial(job, "Adhesive & Underlay", materialSplits.get(1).toPlainString());
-            }
-            if (materialSplits.size() > 2) {
-                addMaterial(job, "Finishing & Trims", materialSplits.get(2).toPlainString());
-            }
-
-            // Delivery: 1-2 line items, a day or two before the job date.
-            BigDecimal deliveryTotal = pct(collection, 0.015, 0.035);
-            List<BigDecimal> deliverySplits = splitAmount(deliveryTotal, 1 + RANDOM.nextInt(2));
-            addDelivery(job, "Lalamove", deliverySplits.get(0).toPlainString(), jobDate.minusDays(1));
-            if (deliverySplits.size() > 1) {
-                addDelivery(job, "Lorry Rental", deliverySplits.get(1).toPlainString(), jobDate.minusDays(1));
-            }
-
-            // Other costs: 2-4 small line items on/around the job date.
-            BigDecimal otherTotal = pct(collection, 0.01, 0.03);
-            int otherCount = 2 + RANDOM.nextInt(3);
-            List<BigDecimal> otherSplits = splitAmount(otherTotal, otherCount);
-            for (int j = 0; j < otherCount; j++) {
-                String[] tmpl = OTHER_COST_TEMPLATES[RANDOM.nextInt(OTHER_COST_TEMPLATES.length)];
-                addOther(job, tmpl[0], otherSplits.get(j).toPlainString(), tmpl[1], jobDate.plusDays(RANDOM.nextInt(2)));
-            }
-
-            // Worker salary: 2-4 distinct workers.
-            BigDecimal salaryTotal = pct(collection, 0.10, 0.18);
-            int workerCount = 2 + RANDOM.nextInt(3);
-            List<BigDecimal> salarySplits = splitAmount(salaryTotal, workerCount);
-            List<String> pickedWorkers = distinctWorkers(workerCount);
-            for (int j = 0; j < workerCount; j++) {
-                addWorker(job, pickedWorkers.get(j), salarySplits.get(j).toPlainString());
-            }
-
-            // Worker food: 1-4 daily entries around the job date.
-            BigDecimal foodTotal = pct(collection, 0.008, 0.018);
-            int foodDays = 1 + RANDOM.nextInt(4);
-            List<BigDecimal> foodSplits = splitAmount(foodTotal, foodDays);
-            for (int j = 0; j < foodDays; j++) {
-                addFood(job, jobDate.plusDays(j), foodSplits.get(j).toPlainString());
-            }
 
             jobRepository.save(job);
         }
-    }
-
-    private List<String> distinctWorkers(int n) {
-        List<String> pool = new java.util.ArrayList<>(List.of(WORKER_NAMES));
-        java.util.Collections.shuffle(pool, RANDOM);
-        return pool.subList(0, n);
     }
 
     /** A random amount, rounded to the nearest 100, between min and max (inclusive-ish). */
@@ -427,45 +252,7 @@ public class DataSeeder implements CommandLineRunner {
         return base.multiply(BigDecimal.valueOf(p)).setScale(2, RoundingMode.HALF_UP);
     }
 
-    /** Splits an amount into {@code parts} positive shares (randomized, but summing back to the original). */
-    private List<BigDecimal> splitAmount(BigDecimal total, int parts) {
-        if (parts <= 1) {
-            return List.of(total.setScale(2, RoundingMode.HALF_UP));
-        }
-        double[] weights = new double[parts];
-        double weightSum = 0;
-        for (int i = 0; i < parts; i++) {
-            weights[i] = 0.4 + RANDOM.nextDouble();
-            weightSum += weights[i];
-        }
-        List<BigDecimal> result = new java.util.ArrayList<>();
-        BigDecimal running = BigDecimal.ZERO;
-        for (int i = 0; i < parts - 1; i++) {
-            BigDecimal share = total.multiply(BigDecimal.valueOf(weights[i] / weightSum)).setScale(2, RoundingMode.HALF_UP);
-            result.add(share);
-            running = running.add(share);
-        }
-        result.add(total.subtract(running).setScale(2, RoundingMode.HALF_UP)); // remainder, keeps the total exact
-        return result;
-    }
-
-    private void addMaterial(Job job, String description, String amount) {
-        job.getMaterialCosts().add(MaterialCost.builder().job(job).description(description).amount(new BigDecimal(amount)).build());
-    }
-
-    private void addDelivery(Job job, String description, String amount, LocalDate date) {
-        job.getDeliveryCosts().add(DeliveryCost.builder().job(job).description(description).amount(new BigDecimal(amount)).date(date).build());
-    }
-
-    private void addOther(Job job, String description, String amount, String category, LocalDate date) {
-        job.getOtherCosts().add(OtherCost.builder().job(job).description(description).amount(new BigDecimal(amount)).category(category).date(date).build());
-    }
-
-    private void addWorker(Job job, String workerName, String amount) {
-        job.getWorkerCosts().add(WorkerCost.builder().job(job).workerName(workerName).amount(new BigDecimal(amount)).build());
-    }
-
-    private void addFood(Job job, LocalDate date, String amount) {
-        job.getWorkerFoodCosts().add(WorkerFoodCost.builder().job(job).date(date).description("Worker meals").amount(new BigDecimal(amount)).build());
+    private BigDecimal amt(String value) {
+        return new BigDecimal(value);
     }
 }

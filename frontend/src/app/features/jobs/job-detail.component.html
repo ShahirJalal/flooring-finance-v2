@@ -4,259 +4,114 @@
       <div>
         <a routerLink="/jobs" class="back-link"><i class="pi pi-arrow-left"></i> Back to Jobs</a>
         <h1>{{ j.name }}</h1>
+        @if (j.customerName) {
+          <div class="text-color-secondary">{{ j.customerName }}</div>
+        }
       </div>
       <div class="flex align-items-center gap-2">
-        <p-tag [value]="j.status" [severity]="statusSeverity(j.status)" />
-        @if (j.status !== 'COMPLETED') {
-          <button pButton type="button" label="Mark Completed" icon="pi pi-check-circle" [outlined]="true" size="small" (click)="markCompleted()"></button>
-        }
         <button pButton type="button" icon="pi pi-pencil" [text]="true" severity="secondary" size="small" pTooltip="Edit job" tooltipPosition="bottom" (click)="openEditJob()"></button>
         <button pButton type="button" icon="pi pi-trash" [text]="true" severity="danger" size="small" pTooltip="Delete job" tooltipPosition="bottom" (click)="deleteJob()"></button>
       </div>
     </div>
 
-    <!-- Job Information -->
-    <p-card header="Job Information">
-      <div class="grid">
-        <div class="col-12 md:col-6"><strong>Customer:</strong> {{ j.customerName || '-' }}</div>
-        <div class="col-12 md:col-6"><strong>State:</strong> {{ j.state || '-' }}</div>
-        <div class="col-12 md:col-6"><strong>Location:</strong> {{ j.location || '-' }}</div>
-        <div class="col-12 md:col-6"><strong>Job Date:</strong> {{ j.jobDate ? (j.jobDate | date: 'dd/MM/yyyy') : '-' }}</div>
-        <div class="col-12"><strong>Notes:</strong> {{ j.notes || '-' }}</div>
-      </div>
-    </p-card>
-
-    <!-- Financial Summary -->
-    <p-card header="Financial Summary" styleClass="financial-summary">
-      <div class="summary-row"><span>Collection</span><span>{{ j.collectionAmount | myr }}</span></div>
+    <p-card>
+      <div class="summary-row"><span>Price</span><span>{{ j.collectionAmount | myr }}</span></div>
       <hr />
-      <div class="summary-row"><span>Materials</span><span>{{ j.materialsTotal | myr }}</span></div>
-      <div class="summary-row"><span>Delivery</span><span>{{ j.deliveryTotal | myr }}</span></div>
-      <div class="summary-row"><span>Other Costs</span><span>{{ j.otherCostsTotal | myr }}</span></div>
-      <div class="summary-row"><span>Worker Salary</span><span>{{ j.workerSalaryTotal | myr }}</span></div>
-      <div class="summary-row"><span>Worker Food</span><span>{{ j.workerFoodTotal | myr }}</span></div>
-      <div class="summary-row summary-total"><span>Total Cost</span><span>{{ j.totalCost | myr }}</span></div>
-      <div class="summary-row summary-profit" [class.text-negative]="j.profit < 0" [class.text-positive]="j.profit >= 0">
-        <span>PROFIT</span><span>{{ j.profit | myr }}</span>
+      <div class="summary-row"><span>Materials</span><span>{{ j.materialsCost | myr }}</span></div>
+      <div class="summary-row">
+        <span>
+          Worker
+          @if (j.workerRatePerDay && j.workerDays) {
+            <span class="text-color-secondary"> ({{ j.workerRatePerDay | myr }} &times; {{ j.workerDays }} days)</span>
+          }
+        </span>
+        <span>{{ j.workerCost | myr }}</span>
       </div>
-      <div class="summary-row"><span>Profit Margin</span><span>{{ j.profitMarginPercent }}%</span></div>
+      <div class="summary-row"><span>Other Costs</span><span>{{ j.otherCosts | myr }}</span></div>
+      <div class="summary-row summary-total"><span>Total Cost</span><span>{{ j.totalCost | myr }}</span></div>
+      <div class="profit-display" [class.text-negative]="j.profit < 0" [class.text-positive]="j.profit >= 0">
+        <span class="profit-label">PROFIT</span>
+        <span class="profit-amount">{{ j.profit | myr }}</span>
+      </div>
     </p-card>
 
-    <!-- Materials -->
-    <p-card>
-      <ng-template pTemplate="header">
-        <div class="page-header p-3 pb-0">
-          <h3 class="m-0">Materials / Goods</h3>
-          <button pButton type="button" label="Add" icon="pi pi-plus" [text]="true" size="small" (click)="openAddMaterial()"></button>
+    @if (j.location || j.jobDate || j.notes) {
+      <p-card header="More details">
+        <div class="grid">
+          @if (j.location) {
+            <div class="col-12 md:col-6"><strong>Location:</strong> {{ j.location }}</div>
+          }
+          @if (j.jobDate) {
+            <div class="col-12 md:col-6"><strong>Job Date:</strong> {{ j.jobDate | date: 'dd/MM/yyyy' }}</div>
+          }
+          @if (j.notes) {
+            <div class="col-12"><strong>Notes:</strong> {{ j.notes }}</div>
+          }
         </div>
-      </ng-template>
-      <p-table [value]="j.materialCosts" responsiveLayout="scroll">
-        <ng-template pTemplate="header"><tr><th>Description</th><th>Amount</th><th>Notes</th><th></th></tr></ng-template>
-        <ng-template pTemplate="body" let-c>
-          <tr>
-            <td>{{ c.description }}</td>
-            <td>{{ c.amount | myr }}</td>
-            <td>{{ c.notes || '-' }}</td>
-            <td><button pButton type="button" icon="pi pi-trash" [text]="true" severity="danger" size="small" pTooltip="Remove" (click)="removeMaterial(c)"></button></td>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="emptymessage"><tr><td colspan="4"><div class="empty-state py-3"><p>No material costs yet.</p></div></td></tr></ng-template>
-      </p-table>
-      <div class="summary-row summary-total"><span>Total Materials</span><span>{{ j.materialsTotal | myr }}</span></div>
-    </p-card>
-
-    <!-- Delivery -->
-    <p-card>
-      <ng-template pTemplate="header">
-        <div class="page-header p-3 pb-0">
-          <h3 class="m-0">Delivery</h3>
-          <button pButton type="button" label="Add" icon="pi pi-plus" [text]="true" size="small" (click)="openAddDelivery()"></button>
-        </div>
-      </ng-template>
-      <p-table [value]="j.deliveryCosts" responsiveLayout="scroll">
-        <ng-template pTemplate="header"><tr><th>Description</th><th>Amount</th><th>Date</th><th>Notes</th><th></th></tr></ng-template>
-        <ng-template pTemplate="body" let-c>
-          <tr>
-            <td>{{ c.description }}</td>
-            <td>{{ c.amount | myr }}</td>
-            <td>{{ c.date ? (c.date | date: 'dd/MM/yyyy') : '-' }}</td>
-            <td>{{ c.notes || '-' }}</td>
-            <td><button pButton type="button" icon="pi pi-trash" [text]="true" severity="danger" size="small" pTooltip="Remove" (click)="removeDelivery(c)"></button></td>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="emptymessage"><tr><td colspan="5"><div class="empty-state py-3"><p>No delivery costs yet.</p></div></td></tr></ng-template>
-      </p-table>
-      <div class="summary-row summary-total"><span>Total Delivery</span><span>{{ j.deliveryTotal | myr }}</span></div>
-    </p-card>
-
-    <!-- Other Costs -->
-    <p-card>
-      <ng-template pTemplate="header">
-        <div class="page-header p-3 pb-0">
-          <h3 class="m-0">Other Costs</h3>
-          <button pButton type="button" label="Add" icon="pi pi-plus" [text]="true" size="small" (click)="openAddOtherCost()"></button>
-        </div>
-      </ng-template>
-      <p-table [value]="j.otherCosts" responsiveLayout="scroll">
-        <ng-template pTemplate="header"><tr><th>Description</th><th>Category</th><th>Amount</th><th>Date</th><th></th></tr></ng-template>
-        <ng-template pTemplate="body" let-c>
-          <tr>
-            <td>{{ c.description }}</td>
-            <td>{{ c.category || '-' }}</td>
-            <td>{{ c.amount | myr }}</td>
-            <td>{{ c.date ? (c.date | date: 'dd/MM/yyyy') : '-' }}</td>
-            <td><button pButton type="button" icon="pi pi-trash" [text]="true" severity="danger" size="small" pTooltip="Remove" (click)="removeOtherCost(c)"></button></td>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="emptymessage"><tr><td colspan="5"><div class="empty-state py-3"><p>No other costs yet.</p></div></td></tr></ng-template>
-      </p-table>
-      <div class="summary-row summary-total"><span>Total Other Costs</span><span>{{ j.otherCostsTotal | myr }}</span></div>
-    </p-card>
-
-    <!-- Worker Salary -->
-    <p-card>
-      <ng-template pTemplate="header">
-        <div class="page-header p-3 pb-0">
-          <h3 class="m-0">Worker Salary</h3>
-          <button pButton type="button" label="Add" icon="pi pi-plus" [text]="true" size="small" (click)="openAddWorker()"></button>
-        </div>
-      </ng-template>
-      <p-table [value]="j.workerCosts" responsiveLayout="scroll">
-        <ng-template pTemplate="header"><tr><th>Worker</th><th>Amount</th><th>Notes</th><th></th></tr></ng-template>
-        <ng-template pTemplate="body" let-c>
-          <tr>
-            <td>{{ c.workerName }}</td>
-            <td>{{ c.amount | myr }}</td>
-            <td>{{ c.notes || '-' }}</td>
-            <td><button pButton type="button" icon="pi pi-trash" [text]="true" severity="danger" size="small" pTooltip="Remove" (click)="removeWorker(c)"></button></td>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="emptymessage"><tr><td colspan="4"><div class="empty-state py-3"><p>No worker salary costs yet.</p></div></td></tr></ng-template>
-      </p-table>
-      <div class="summary-row summary-total"><span>Total Worker Salary</span><span>{{ j.workerSalaryTotal | myr }}</span></div>
-    </p-card>
-
-    <!-- Worker Food -->
-    <p-card>
-      <ng-template pTemplate="header">
-        <div class="page-header p-3 pb-0">
-          <h3 class="m-0">Worker Food</h3>
-          <button pButton type="button" label="Add" icon="pi pi-plus" [text]="true" size="small" (click)="openAddFood()"></button>
-        </div>
-      </ng-template>
-      <p-table [value]="j.workerFoodCosts" responsiveLayout="scroll">
-        <ng-template pTemplate="header"><tr><th>Date</th><th>Description</th><th>Amount</th><th></th></tr></ng-template>
-        <ng-template pTemplate="body" let-c>
-          <tr>
-            <td>{{ c.date ? (c.date | date: 'dd/MM/yyyy') : '-' }}</td>
-            <td>{{ c.description || '-' }}</td>
-            <td>{{ c.amount | myr }}</td>
-            <td><button pButton type="button" icon="pi pi-trash" [text]="true" severity="danger" size="small" pTooltip="Remove" (click)="removeFood(c)"></button></td>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="emptymessage"><tr><td colspan="4"><div class="empty-state py-3"><p>No worker food costs yet.</p></div></td></tr></ng-template>
-      </p-table>
-      <div class="summary-row summary-total"><span>Total Worker Food</span><span>{{ j.workerFoodTotal | myr }}</span></div>
-    </p-card>
+      </p-card>
+    }
   </div>
 } @else if (loading()) {
   <div class="page-container">
-    <p-skeleton height="2rem" width="16rem" />
-    <p-skeleton height="8rem" />
+    <p-skeleton height="2rem" width="16rem" styleClass="mb-3" />
+    <p-skeleton height="8rem" styleClass="mb-3" />
     <p-skeleton height="12rem" />
   </div>
 }
 
 <!-- Edit job dialog -->
-<p-dialog [(visible)]="jobDialogVisible" header="Edit Job" [modal]="true" [style]="{ width: '32rem' }" [dismissableMask]="true">
+<p-dialog [(visible)]="jobDialogVisible" header="Edit Job" [modal]="true" [style]="{ width: '30rem' }" [dismissableMask]="true">
   <div class="flex flex-column gap-3">
-    <div class="field"><label>Job Name *</label><input pInputText class="w-full" [(ngModel)]="jobForm.name" name="name" /></div>
-    <div class="grid">
-      <div class="col-6 field"><label>Customer</label><input pInputText class="w-full" [(ngModel)]="jobForm.customerName" name="customerName" /></div>
-      <div class="col-6 field"><label>Job Date</label><p-datepicker class="w-full" [dateFormat]="dateFormat" [(ngModel)]="jobForm.jobDate" name="jobDate" [showIcon]="true" [showButtonBar]="true" /></div>
+    <div class="field"><label>Job Name</label><input pInputText class="w-full" [(ngModel)]="jobForm.name" name="name" /></div>
+
+    <div class="field">
+      <label>Price (RM) *</label>
+      <p-inputnumber class="w-full" [(ngModel)]="jobForm.collectionAmount" name="collectionAmount" mode="decimal" prefix="RM " [minFractionDigits]="2" />
     </div>
-    <div class="field"><label>Location</label><input pInputText class="w-full" [(ngModel)]="jobForm.location" name="location" /></div>
-    <div class="grid">
-      <div class="col-6 field"><label>State</label><p-select class="w-full" [options]="stateOptions" optionLabel="label" optionValue="value" [(ngModel)]="jobForm.state" name="state" [showClear]="true" placeholder="Select state" /></div>
-      <div class="col-6 field"><label>Status</label><p-select class="w-full" [options]="statusOptions" optionLabel="label" optionValue="value" [(ngModel)]="jobForm.status" name="status" /></div>
+    <div class="field">
+      <label>Materials (RM)</label>
+      <p-inputnumber class="w-full" [(ngModel)]="jobForm.materialsCost" name="materialsCost" mode="decimal" prefix="RM " [minFractionDigits]="2" />
     </div>
-    <div class="field"><label>Collection (RM) *</label><p-inputnumber class="w-full" [(ngModel)]="jobForm.collectionAmount" name="collectionAmount" mode="decimal" prefix="RM " [minFractionDigits]="2" /></div>
-    <div class="field"><label>Notes</label><textarea pTextarea class="w-full" rows="2" [(ngModel)]="jobForm.notes" name="notes"></textarea></div>
+    <div class="field">
+      <label>Worker</label>
+      <div class="flex align-items-center gap-2">
+        <p-inputnumber class="flex-1" [(ngModel)]="jobForm.workerRatePerDay" (ngModelChange)="onWorkerInputsChange()" name="workerRatePerDay" mode="decimal" prefix="RM " placeholder="Rate/day" />
+        <span class="text-color-secondary">&times;</span>
+        <p-inputnumber class="flex-1" [(ngModel)]="jobForm.workerDays" (ngModelChange)="onWorkerInputsChange()" name="workerDays" placeholder="Days" [min]="0" />
+      </div>
+      <p-inputnumber class="w-full mt-2" [(ngModel)]="jobForm.workerCost" name="workerCost" mode="decimal" prefix="RM " [minFractionDigits]="2" placeholder="Worker cost total (auto-filled above, or type directly)" />
+    </div>
+    <div class="field">
+      <label>Other Costs (RM)</label>
+      <p-inputnumber class="w-full" [(ngModel)]="jobForm.otherCosts" name="otherCosts" mode="decimal" prefix="RM " [minFractionDigits]="2" placeholder="Food, delivery, misc." />
+    </div>
+
+    <div class="profit-summary">
+      <div class="summary-row"><span>Total Cost</span><span>{{ previewTotalCost | myr }}</span></div>
+      <div class="profit-display" [class.text-negative]="previewProfit < 0" [class.text-positive]="previewProfit >= 0">
+        <span class="profit-label">PROFIT</span>
+        <span class="profit-amount">{{ previewProfit | myr }}</span>
+      </div>
+    </div>
+
+    <button
+      pButton type="button" [text]="true" size="small"
+      [label]="moreDetailsExpanded() ? 'Hide details' : 'More details (customer, location, notes)'"
+      [icon]="moreDetailsExpanded() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" iconPos="right"
+      (click)="moreDetailsExpanded.set(!moreDetailsExpanded())"
+    ></button>
+
+    @if (moreDetailsExpanded()) {
+      <div class="flex gap-3">
+        <div class="field flex-1"><label>Customer</label><input pInputText class="w-full" [(ngModel)]="jobForm.customerName" name="customerName" /></div>
+        <div class="field flex-1"><label>Job Date</label><p-datepicker class="w-full" [dateFormat]="dateFormat" [(ngModel)]="jobForm.jobDate" name="jobDate" [showIcon]="true" [showButtonBar]="true" /></div>
+      </div>
+      <div class="field"><label>Location</label><input pInputText class="w-full" [(ngModel)]="jobForm.location" name="location" /></div>
+      <div class="field"><label>Notes</label><textarea pTextarea class="w-full" rows="2" [(ngModel)]="jobForm.notes" name="notes"></textarea></div>
+    }
   </div>
   <ng-template pTemplate="footer">
     <button pButton type="button" label="Cancel" [text]="true" severity="secondary" (click)="jobDialogVisible.set(false)"></button>
     <button pButton type="button" label="Save" icon="pi pi-check" (click)="saveJob()"></button>
-  </ng-template>
-</p-dialog>
-
-<!-- Add material dialog -->
-<p-dialog [(visible)]="materialDialogVisible" header="Add Material" [modal]="true" [style]="{ width: '26rem' }" [dismissableMask]="true">
-  <div class="flex flex-column gap-3">
-    <div class="field"><label>Description *</label><input pInputText class="w-full" [(ngModel)]="materialForm.description" name="description" placeholder="e.g. Flooring" /></div>
-    <div class="field"><label>Amount (RM) *</label><p-inputnumber class="w-full" [(ngModel)]="materialForm.amount" name="amount" mode="decimal" prefix="RM " [minFractionDigits]="2" /></div>
-    <div class="field"><label>Notes</label><textarea pTextarea class="w-full" rows="2" [(ngModel)]="materialForm.notes" name="notes"></textarea></div>
-  </div>
-  <ng-template pTemplate="footer">
-    <button pButton type="button" label="Cancel" [text]="true" severity="secondary" (click)="materialDialogVisible.set(false)"></button>
-    <button pButton type="button" label="Add" icon="pi pi-check" (click)="saveMaterial()"></button>
-  </ng-template>
-</p-dialog>
-
-<!-- Add delivery dialog -->
-<p-dialog [(visible)]="deliveryDialogVisible" header="Add Delivery Cost" [modal]="true" [style]="{ width: '26rem' }" [dismissableMask]="true">
-  <div class="flex flex-column gap-3">
-    <div class="field"><label>Description *</label><input pInputText class="w-full" [(ngModel)]="deliveryForm.description" name="description" placeholder="e.g. Lalamove" /></div>
-    <div class="field"><label>Amount (RM) *</label><p-inputnumber class="w-full" [(ngModel)]="deliveryForm.amount" name="amount" mode="decimal" prefix="RM " [minFractionDigits]="2" /></div>
-    <div class="field"><label>Date</label><p-datepicker class="w-full" [dateFormat]="dateFormat" [(ngModel)]="deliveryForm.date" name="date" [showIcon]="true" /></div>
-    <div class="field"><label>Notes</label><textarea pTextarea class="w-full" rows="2" [(ngModel)]="deliveryForm.notes" name="notes"></textarea></div>
-  </div>
-  <ng-template pTemplate="footer">
-    <button pButton type="button" label="Cancel" [text]="true" severity="secondary" (click)="deliveryDialogVisible.set(false)"></button>
-    <button pButton type="button" label="Add" icon="pi pi-check" (click)="saveDelivery()"></button>
-  </ng-template>
-</p-dialog>
-
-<!-- Add other cost dialog -->
-<p-dialog [(visible)]="otherCostDialogVisible" header="Add Other Cost" [modal]="true" [style]="{ width: '26rem' }" [dismissableMask]="true">
-  <div class="flex flex-column gap-3">
-    <div class="field"><label>Description *</label><input pInputText class="w-full" [(ngModel)]="otherCostForm.description" name="description" placeholder="e.g. Petrol" /></div>
-    <div class="field"><label>Amount (RM) *</label><p-inputnumber class="w-full" [(ngModel)]="otherCostForm.amount" name="amount" mode="decimal" prefix="RM " [minFractionDigits]="2" /></div>
-    <div class="field">
-      <label>Category</label>
-      <p-select class="w-full" [options]="otherCostCategories" [(ngModel)]="otherCostForm.category" name="category" [editable]="true" placeholder="Optional - pick or type your own" />
-    </div>
-    <div class="field"><label>Date</label><p-datepicker class="w-full" [dateFormat]="dateFormat" [(ngModel)]="otherCostForm.date" name="date" [showIcon]="true" /></div>
-    <div class="field"><label>Notes</label><textarea pTextarea class="w-full" rows="2" [(ngModel)]="otherCostForm.notes" name="notes"></textarea></div>
-  </div>
-  <ng-template pTemplate="footer">
-    <button pButton type="button" label="Cancel" [text]="true" severity="secondary" (click)="otherCostDialogVisible.set(false)"></button>
-    <button pButton type="button" label="Add" icon="pi pi-check" (click)="saveOtherCost()"></button>
-  </ng-template>
-</p-dialog>
-
-<!-- Add worker salary dialog -->
-<p-dialog [(visible)]="workerDialogVisible" header="Add Worker Salary" [modal]="true" [style]="{ width: '26rem' }" [dismissableMask]="true">
-  <div class="flex flex-column gap-3">
-    <div class="field"><label>Worker Name *</label><input pInputText class="w-full" [(ngModel)]="workerForm.workerName" name="workerName" placeholder="e.g. Ali" /></div>
-    <div class="field"><label>Amount (RM) *</label><p-inputnumber class="w-full" [(ngModel)]="workerForm.amount" name="amount" mode="decimal" prefix="RM " [minFractionDigits]="2" /></div>
-    <div class="field"><label>Notes</label><textarea pTextarea class="w-full" rows="2" [(ngModel)]="workerForm.notes" name="notes"></textarea></div>
-  </div>
-  <ng-template pTemplate="footer">
-    <button pButton type="button" label="Cancel" [text]="true" severity="secondary" (click)="workerDialogVisible.set(false)"></button>
-    <button pButton type="button" label="Add" icon="pi pi-check" (click)="saveWorker()"></button>
-  </ng-template>
-</p-dialog>
-
-<!-- Add worker food dialog -->
-<p-dialog [(visible)]="foodDialogVisible" header="Add Worker Food" [modal]="true" [style]="{ width: '26rem' }" [dismissableMask]="true">
-  <div class="flex flex-column gap-3">
-    <div class="field"><label>Date</label><p-datepicker class="w-full" [dateFormat]="dateFormat" [(ngModel)]="foodForm.date" name="date" [showIcon]="true" /></div>
-    <div class="field"><label>Description</label><input pInputText class="w-full" [(ngModel)]="foodForm.description" name="description" placeholder="e.g. Lunch for workers" /></div>
-    <div class="field"><label>Amount (RM) *</label><p-inputnumber class="w-full" [(ngModel)]="foodForm.amount" name="amount" mode="decimal" prefix="RM " [minFractionDigits]="2" /></div>
-    <div class="field"><label>Notes</label><textarea pTextarea class="w-full" rows="2" [(ngModel)]="foodForm.notes" name="notes"></textarea></div>
-  </div>
-  <ng-template pTemplate="footer">
-    <button pButton type="button" label="Cancel" [text]="true" severity="secondary" (click)="foodDialogVisible.set(false)"></button>
-    <button pButton type="button" label="Add" icon="pi pi-check" (click)="saveFood()"></button>
   </ng-template>
 </p-dialog>

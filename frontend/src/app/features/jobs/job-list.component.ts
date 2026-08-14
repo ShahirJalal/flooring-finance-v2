@@ -9,12 +9,9 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
-import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
-import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
 import { TooltipModule } from 'primeng/tooltip';
-import { enumOptions, JOB_STATUSES, JobStatus, MALAYSIAN_STATES } from '../../shared/models/enums';
 import { JobRequest, JobSummary } from '../../shared/models/job.model';
 import { MyrCurrencyPipe } from '../../shared/utilities/currency.pipe';
 import { DATE_FORMAT_PRIME, toIsoDate } from '../../shared/utilities/date.constants';
@@ -24,24 +21,22 @@ interface JobFormModel {
   name: string;
   customerName: string | null;
   location: string | null;
-  state: JobRequest['state'];
   jobDate: Date | null;
-  status: JobStatus;
   notes: string | null;
   collectionAmount: number | null;
+  materialsCost: number | null;
+  workerRatePerDay: number | null;
+  workerDays: number | null;
+  workerCost: number | null;
+  otherCosts: number | null;
 }
-
-const EMPTY_FORM: JobFormModel = {
-  name: '', customerName: null, location: null, state: null,
-  jobDate: new Date(), status: 'IN_PROGRESS', notes: null, collectionAmount: null,
-};
 
 @Component({
   selector: 'app-job-list',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, RouterLink, ButtonModule, CardModule, TableModule, DialogModule, TagModule,
-    InputTextModule, InputNumberModule, TextareaModule, SelectModule, DatePickerModule, TooltipModule, MyrCurrencyPipe,
+    CommonModule, FormsModule, RouterLink, ButtonModule, CardModule, TableModule, DialogModule,
+    InputTextModule, InputNumberModule, TextareaModule, DatePickerModule, TooltipModule, MyrCurrencyPipe,
   ],
   templateUrl: './job-list.component.html',
   styleUrl: './job-list.component.scss',
@@ -50,14 +45,10 @@ export class JobListComponent implements OnInit {
   readonly jobs = signal<JobSummary[]>([]);
   readonly loading = signal(true);
   readonly dialogVisible = signal(false);
-  readonly stateOptions = enumOptions(MALAYSIAN_STATES);
-  readonly statusOptions = enumOptions(JOB_STATUSES);
+  readonly moreDetailsExpanded = signal(false);
   readonly dateFormat = DATE_FORMAT_PRIME;
 
-  searchText = '';
-  statusFilter: JobStatus | null = null;
-
-  form: JobFormModel = { ...EMPTY_FORM };
+  form: JobFormModel = this.emptyForm();
 
   constructor(
     private readonly jobService: JobService,
@@ -72,35 +63,63 @@ export class JobListComponent implements OnInit {
 
   load(): void {
     this.loading.set(true);
-    this.jobService.search({ search: this.searchText || undefined, status: this.statusFilter ?? undefined }).subscribe(jobs => {
+    this.jobService.list().subscribe(jobs => {
       this.jobs.set(jobs);
       this.loading.set(false);
     });
   }
 
   openCreate(): void {
-    this.form = { ...EMPTY_FORM };
+    this.form = this.emptyForm();
+    this.moreDetailsExpanded.set(false);
     this.dialogVisible.set(true);
   }
 
+  /** So the job name field is never blank/required-feeling - just a starting point the owner can overwrite or leave as-is. */
+  private emptyForm(): JobFormModel {
+    return {
+      name: `Job ${this.jobs().length + 1}`, customerName: null, location: null,
+      jobDate: new Date(), notes: null, collectionAmount: null,
+      materialsCost: null, workerRatePerDay: null, workerDays: null, workerCost: null, otherCosts: null,
+    };
+  }
+
+  /** Rate x days is just a convenience calculator - it only fills workerCost, which stays directly editable. */
+  onWorkerInputsChange(): void {
+    if (this.form.workerRatePerDay != null && this.form.workerDays != null) {
+      this.form.workerCost = Math.round(this.form.workerRatePerDay * this.form.workerDays * 100) / 100;
+    }
+  }
+
+  get previewTotalCost(): number {
+    return (this.form.materialsCost ?? 0) + (this.form.workerCost ?? 0) + (this.form.otherCosts ?? 0);
+  }
+
+  get previewProfit(): number {
+    return (this.form.collectionAmount ?? 0) - this.previewTotalCost;
+  }
+
   save(): void {
-    if (!this.form.name?.trim() || this.form.collectionAmount === null) {
-      this.messageService.add({ severity: 'warn', summary: 'Job name and collection amount are required' });
+    if (this.form.collectionAmount === null) {
+      this.messageService.add({ severity: 'warn', summary: 'Enter the price for this job' });
       return;
     }
     const request: JobRequest = {
-      name: this.form.name,
+      name: this.form.name?.trim() || this.emptyForm().name,
       customerName: this.form.customerName,
       location: this.form.location,
-      state: this.form.state,
       jobDate: toIsoDate(this.form.jobDate),
-      status: this.form.status,
       notes: this.form.notes,
       collectionAmount: this.form.collectionAmount,
+      materialsCost: this.form.materialsCost ?? 0,
+      workerRatePerDay: this.form.workerRatePerDay,
+      workerDays: this.form.workerDays,
+      workerCost: this.form.workerCost ?? 0,
+      otherCosts: this.form.otherCosts ?? 0,
     };
     this.jobService.create(request).subscribe(job => {
       this.dialogVisible.set(false);
-      this.messageService.add({ severity: 'success', summary: 'Job created' });
+      this.messageService.add({ severity: 'success', summary: 'Job saved' });
       this.router.navigate(['/jobs', job.id]);
     });
   }
@@ -117,14 +136,5 @@ export class JobListComponent implements OnInit {
         });
       },
     });
-  }
-
-  statusSeverity(status: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
-    switch (status) {
-      case 'COMPLETED': return 'success';
-      case 'IN_PROGRESS': return 'info';
-      case 'CANCELLED': return 'danger';
-      default: return 'secondary';
-    }
   }
 }

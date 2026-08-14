@@ -1,5 +1,10 @@
 @import "primeicons/primeicons.css";
 @import "primeflex/primeflex.scss";
+// Self-hosted variable font (all weights in one file) - matches the clean,
+// flat sans used by Cloudflare's dashboard, which this app's look is
+// modeled on. Self-hosted rather than a Google Fonts CDN link so the app
+// doesn't depend on an external network call to render its own text.
+@import "@fontsource-variable/inter";
 
 * {
   box-sizing: border-box;
@@ -8,7 +13,7 @@
 html, body {
   height: 100%;
   margin: 0;
-  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Inter Variable', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background: var(--p-content-background);
   color: var(--p-text-color);
 }

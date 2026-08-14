@@ -1,5 +1,6 @@
 package com.flooring.finance.service;
 
+import com.flooring.finance.common.EntryCategory;
 import com.flooring.finance.entity.Job;
 import java.math.BigDecimal;
 import org.springframework.stereotype.Service;
@@ -11,33 +12,30 @@ import org.springframework.stereotype.Service;
  * change.
  *
  * <pre>
- *   Total Cost = Materials + Worker + Other Costs
- *   Profit     = Collection - Total Cost
+ *   Total Income = sum of entries tagged Income
+ *   Total Cost   = sum of every other entry
+ *   Profit       = Total Income - Total Cost
  * </pre>
  */
 @Service
 public class JobCalculationService {
 
-    public BigDecimal calculateTotalCost(Job job) {
-        return nz(job.getMaterialsCost()).add(nz(job.getWorkerCost())).add(nz(job.getOtherCosts()));
-    }
-
-    public BigDecimal calculateProfit(Job job) {
-        return nz(job.getCollectionAmount()).subtract(calculateTotalCost(job));
+    public Totals calculateTotals(Job job) {
+        BigDecimal income = BigDecimal.ZERO;
+        BigDecimal cost = BigDecimal.ZERO;
+        for (var entry : job.getEntries()) {
+            if (entry.getCategory() == EntryCategory.INCOME) {
+                income = income.add(entry.getAmount());
+            } else {
+                cost = cost.add(entry.getAmount());
+            }
+        }
+        return new Totals(income, cost, income.subtract(cost));
     }
 
     /** Both numbers a job response needs, computed together in one pass. */
-    public Totals calculateTotals(Job job) {
-        BigDecimal totalCost = calculateTotalCost(job);
-        BigDecimal profit = calculateProfit(job);
-        return new Totals(totalCost, profit);
-    }
-
-    private BigDecimal nz(BigDecimal value) {
-        return value != null ? value : BigDecimal.ZERO;
-    }
-
     public record Totals(
+            BigDecimal totalIncome,
             BigDecimal totalCost,
             BigDecimal profit
     ) {

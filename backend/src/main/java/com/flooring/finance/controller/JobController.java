@@ -1,5 +1,6 @@
 package com.flooring.finance.controller;
 
+import com.flooring.finance.dto.EntrySuggestion;
 import com.flooring.finance.dto.JobDtos.JobRequest;
 import com.flooring.finance.dto.JobDtos.JobResponse;
 import com.flooring.finance.dto.JobDtos.JobSummaryResponse;
@@ -32,6 +33,11 @@ public class JobController {
     @GetMapping
     public List<JobSummaryResponse> list(@RequestParam(required = false) String search) {
         return jobService.list(search);
+    }
+
+    @GetMapping("/entry-suggestions")
+    public List<EntrySuggestion> entrySuggestions() {
+        return jobService.entrySuggestions();
     }
 
     @GetMapping("/{id}")

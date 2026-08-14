@@ -13,7 +13,7 @@
       ></button>
       <button
         pButton type="button" [text]="true" severity="secondary" [rounded]="true"
-        icon="pi pi-sign-out" (click)="logout()"
+        icon="pi pi-sign-out" [loading]="loggingOut()" (click)="logout()"
         pTooltip="Log out" tooltipPosition="bottom"
       ></button>
     </div>

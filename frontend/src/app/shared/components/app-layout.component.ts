@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
@@ -18,12 +18,15 @@ import { ThemeToggleButtonComponent } from '../theme-toggle/theme-toggle-button.
   styleUrl: './app-layout.component.scss',
 })
 export class AppLayoutComponent {
+  readonly loggingOut = signal(false);
+
   constructor(
     private readonly authService: AuthService,
     private readonly router: Router,
   ) {}
 
   logout(): void {
+    this.loggingOut.set(true);
     this.authService.logout().subscribe({
       next: () => this.router.navigate(['/login']),
       error: () => this.router.navigate(['/login']),

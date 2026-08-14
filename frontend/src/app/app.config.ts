@@ -18,10 +18,9 @@ export const appConfig: ApplicationConfig = {
     providePrimeNG({
       theme: {
         preset: Aura,
-        // No dark mode - one look, always light. `false` fully disables
-        // PrimeNG's dark variant instead of leaving it to follow the OS.
         options: {
-          darkModeSelector: false,
+          // Must match ThemeService's DARK_CLASS and the inline script in index.html.
+          darkModeSelector: '.app-dark',
         },
       },
     }),

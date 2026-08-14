@@ -6,8 +6,27 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <script>
+    // Applies the dark class before Angular bootstraps (and before first
+    // paint, since this runs synchronously in <head>) so there's no flash of
+    // the wrong theme. Mirrors ThemeService's storage key/class name/default
+    // logic - keep the two in sync if either changes.
+    (function () {
+      try {
+        var stored = localStorage.getItem('ff-theme');
+        var isDark = stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) {
+          document.documentElement.classList.add('app-dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
   <style>
-    body { background: #f4f6f8; }
+    /* Plain hex fallbacks (not PrimeNG tokens, which aren't defined this
+       early) so the very first paint - before PrimeNG's runtime theme CSS
+       has loaded - already matches the mode the inline script above picked. */
+    html:not(.app-dark) body { background: #f4f6f8; }
+    html.app-dark body { background: #0d1117; }
   </style>
 </head>
 <body>

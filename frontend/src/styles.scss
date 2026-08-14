@@ -9,13 +9,8 @@ html, body {
   height: 100%;
   margin: 0;
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  // NOT --p-surface-50: that's a raw primitive ramp step, always near-white
-  // regardless of theme - only semantic tokens like this one actually flip
-  // between light/dark via the .app-dark class. Using the primitive here is
-  // what left the page canvas white while every card correctly went dark.
   background: var(--p-content-background);
   color: var(--p-text-color);
-  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 // PrimeNG's component selectors (p-card, p-table, ...) are custom element
@@ -54,7 +49,6 @@ p-card, p-skeleton, p-chart, p-table, p-dialog, p-confirmdialog, p-toast {
 @media (max-width: 767px) {
   .page-container {
     padding: 1rem;
-    padding-bottom: 6rem; // clear the fixed bottom nav
   }
 }
 
@@ -131,6 +125,32 @@ p-card, p-skeleton, p-chart, p-table, p-dialog, p-confirmdialog, p-toast {
   font-weight: 800;
   font-size: 1.3rem;
   border-bottom: none;
+}
+
+// --- The one number that matters: shown big on both the job form's live
+// preview and the job detail page, colored the same way as text-positive/
+// text-negative so "am I making money" reads at a glance. ---
+.profit-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 1.25rem 0 0.5rem;
+  text-align: center;
+}
+
+.profit-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--p-text-muted-color);
+}
+
+.profit-amount {
+  font-size: 2.75rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
 }
 
 // --- Empty states: centered icon + message + optional CTA, used inside a p-card ---

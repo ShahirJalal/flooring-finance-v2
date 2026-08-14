@@ -1,6 +1,8 @@
 package com.flooring.finance.seed;
 
+import com.flooring.finance.common.EntryCategory;
 import com.flooring.finance.entity.Job;
+import com.flooring.finance.entity.JobEntry;
 import com.flooring.finance.entity.User;
 import com.flooring.finance.repository.JobRepository;
 import com.flooring.finance.repository.UserRepository;
@@ -71,83 +73,83 @@ public class DataSeeder implements CommandLineRunner {
     // ------------------------------------------------------------------
 
     private void seedTamanMelawati() {
-        jobRepository.save(Job.builder()
+        Job job = Job.builder()
                 .name("Taman Melawati House")
                 .customerName("Ahmad")
                 .location("Taman Melawati, Kuala Lumpur")
                 .jobDate(LocalDate.of(2026, 5, 15))
                 .notes("500 sq ft SPC vinyl plank, living and dining area.")
-                .collectionAmount(amt("15000.00"))
-                .materialsCost(amt("6500.00"))
-                .workerRatePerDay(amt("466.67"))
-                .workerDays(3)
-                .workerCost(amt("1400.00"))
-                .otherCosts(amt("940.00"))
-                .build());
+                .build();
+        addEntry(job, EntryCategory.INCOME, "Full payment", "15000.00");
+        addEntry(job, EntryCategory.MATERIALS, "SPC vinyl plank + adhesive", "6500.00");
+        addEntry(job, EntryCategory.WORKER, "3 days at RM466.67/day", "1400.00");
+        addEntry(job, EntryCategory.DELIVERY, "Lorry hire for materials", "600.00");
+        addEntry(job, EntryCategory.OTHER, "Misc", "340.00");
+        jobRepository.save(job);
     }
 
     private void seedShahAlamOffice() {
-        jobRepository.save(Job.builder()
+        Job job = Job.builder()
                 .name("Shah Alam Office")
                 .customerName("Tan Wei Ming")
                 .location("Seksyen 15, Shah Alam")
                 .jobDate(LocalDate.of(2026, 6, 10))
                 .notes("Office renovation - laminate flooring throughout.")
-                .collectionAmount(amt("20000.00"))
-                .materialsCost(amt("9000.00"))
-                .workerRatePerDay(amt("800.00"))
-                .workerDays(4)
-                .workerCost(amt("3200.00"))
-                .otherCosts(amt("1800.00"))
-                .build());
+                .build();
+        addEntry(job, EntryCategory.INCOME, "Full payment", "20000.00");
+        addEntry(job, EntryCategory.MATERIALS, "Laminate flooring", "9000.00");
+        addEntry(job, EntryCategory.WORKER, "4 days at RM800/day", "3200.00");
+        addEntry(job, EntryCategory.DELIVERY, "Lorry hire for materials", "1100.00");
+        addEntry(job, EntryCategory.OTHER, "Misc", "700.00");
+        jobRepository.save(job);
     }
 
     private void seedKajangHouse() {
-        jobRepository.save(Job.builder()
+        Job job = Job.builder()
                 .name("Kajang House")
                 .customerName("Siti Rahman")
                 .location("Bandar Kajang, Selangor")
                 .jobDate(LocalDate.of(2026, 7, 5))
                 .notes("Vinyl flooring for 3-bedroom house.")
-                .collectionAmount(amt("13500.00"))
-                .materialsCost(amt("5500.00"))
-                .workerRatePerDay(amt("666.67"))
-                .workerDays(3)
-                .workerCost(amt("2000.00"))
-                .otherCosts(amt("860.00"))
-                .build());
+                .build();
+        addEntry(job, EntryCategory.INCOME, "Full payment", "13500.00");
+        addEntry(job, EntryCategory.MATERIALS, "Vinyl flooring", "5500.00");
+        addEntry(job, EntryCategory.WORKER, "3 days at RM666.67/day", "2000.00");
+        addEntry(job, EntryCategory.DELIVERY, "Lorry hire for materials", "500.00");
+        addEntry(job, EntryCategory.OTHER, "Misc", "360.00");
+        jobRepository.save(job);
     }
 
     private void seedSerembanShop() {
-        jobRepository.save(Job.builder()
+        Job job = Job.builder()
                 .name("Seremban Shop")
                 .customerName("Lim Kok Wei")
                 .location("Seremban 2, Negeri Sembilan")
                 .jobDate(LocalDate.of(2026, 8, 1))
                 .notes("Retail shop lot - homogeneous tile flooring. Deposit collected, work ongoing.")
-                .collectionAmount(amt("18000.00"))
-                .materialsCost(amt("7000.00"))
-                .workerRatePerDay(amt("600.00"))
-                .workerDays(3)
-                .workerCost(amt("1800.00"))
-                .otherCosts(amt("880.00"))
-                .build());
+                .build();
+        addEntry(job, EntryCategory.INCOME, "Deposit", "18000.00");
+        addEntry(job, EntryCategory.MATERIALS, "Homogeneous tiles + grout", "7000.00");
+        addEntry(job, EntryCategory.WORKER, "3 days at RM600/day", "1800.00");
+        addEntry(job, EntryCategory.DELIVERY, "Lorry hire for materials", "520.00");
+        addEntry(job, EntryCategory.OTHER, "Misc", "360.00");
+        jobRepository.save(job);
     }
 
     private void seedJohorBahruProject() {
-        jobRepository.save(Job.builder()
+        Job job = Job.builder()
                 .name("Johor Bahru Project")
                 .customerName("Rajesh Kumar")
                 .location("Taman Molek, Johor Bahru")
                 .jobDate(LocalDate.of(2026, 8, 8))
                 .notes("Commercial unit - parquet flooring for reception and offices.")
-                .collectionAmount(amt("22000.00"))
-                .materialsCost(amt("10000.00"))
-                .workerRatePerDay(amt("833.33"))
-                .workerDays(3)
-                .workerCost(amt("2500.00"))
-                .otherCosts(amt("1300.00"))
-                .build());
+                .build();
+        addEntry(job, EntryCategory.INCOME, "Full payment", "22000.00");
+        addEntry(job, EntryCategory.MATERIALS, "Parquet flooring", "10000.00");
+        addEntry(job, EntryCategory.WORKER, "3 days at RM833.33/day", "2500.00");
+        addEntry(job, EntryCategory.DELIVERY, "Lorry hire for materials", "800.00");
+        addEntry(job, EntryCategory.OTHER, "Misc", "500.00");
+        jobRepository.save(job);
     }
 
     // ------------------------------------------------------------------
@@ -218,8 +220,12 @@ public class DataSeeder implements CommandLineRunner {
             BigDecimal workerRatePerDay = randomRoundAmount(80, 250);
             BigDecimal workerCost = workerRatePerDay.multiply(BigDecimal.valueOf(workerDays)).setScale(2, RoundingMode.HALF_UP);
 
-            // Covers what used to be delivery + other + worker food, combined into one bucket.
-            BigDecimal otherCosts = pct(collection, 0.03, 0.08);
+            // Covers what used to be delivery + other + worker food - split
+            // between a Delivery entry and a smaller Other catch-all.
+            BigDecimal miscCosts = pct(collection, 0.03, 0.08);
+            BigDecimal deliveryShare = pct(miscCosts, 0.4, 0.75);
+            BigDecimal deliveryCost = deliveryShare.setScale(2, RoundingMode.HALF_UP);
+            BigDecimal otherCosts = miscCosts.subtract(deliveryCost);
 
             Job job = Job.builder()
                     .name(location + " " + kind)
@@ -227,13 +233,12 @@ public class DataSeeder implements CommandLineRunner {
                     .location(location)
                     .jobDate(jobDate)
                     .notes(sqft + " sq ft " + flooring[1] + ", " + area + ".")
-                    .collectionAmount(collection)
-                    .materialsCost(materialsCost)
-                    .workerRatePerDay(workerRatePerDay)
-                    .workerDays(workerDays)
-                    .workerCost(workerCost)
-                    .otherCosts(otherCosts)
                     .build();
+            addEntry(job, EntryCategory.INCOME, "Full payment", collection);
+            addEntry(job, EntryCategory.MATERIALS, flooring[0], materialsCost);
+            addEntry(job, EntryCategory.WORKER, workerDays + " days at " + myr(workerRatePerDay) + "/day", workerCost);
+            addEntry(job, EntryCategory.DELIVERY, "Lorry hire for materials", deliveryCost);
+            addEntry(job, EntryCategory.OTHER, "Misc", otherCosts);
 
             jobRepository.save(job);
         }
@@ -252,7 +257,20 @@ public class DataSeeder implements CommandLineRunner {
         return base.multiply(BigDecimal.valueOf(p)).setScale(2, RoundingMode.HALF_UP);
     }
 
-    private BigDecimal amt(String value) {
-        return new BigDecimal(value);
+    private void addEntry(Job job, EntryCategory category, String description, String amount) {
+        addEntry(job, category, description, new BigDecimal(amount));
+    }
+
+    private void addEntry(Job job, EntryCategory category, String description, BigDecimal amount) {
+        job.getEntries().add(JobEntry.builder()
+                .job(job)
+                .category(category)
+                .description(description)
+                .amount(amount)
+                .build());
+    }
+
+    private String myr(BigDecimal amount) {
+        return "RM" + amount.setScale(0, RoundingMode.HALF_UP);
     }
 }

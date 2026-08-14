@@ -15,19 +15,19 @@
     </div>
 
     <p-card>
-      <div class="summary-row"><span>Price</span><span>{{ j.collectionAmount | myr }}</span></div>
+      @for (entry of j.entries; track entry.id) {
+        <div class="summary-row">
+          <span>
+            {{ entry.description || categoryLabel(entry.category) }}
+            <span class="text-color-secondary">({{ categoryLabel(entry.category) }})</span>
+          </span>
+          <span [class.text-positive]="entry.category === 'INCOME'">
+            {{ entry.category === 'INCOME' ? '+' : '−' }}{{ entry.amount | myr }}
+          </span>
+        </div>
+      }
       <hr />
-      <div class="summary-row"><span>Materials</span><span>{{ j.materialsCost | myr }}</span></div>
-      <div class="summary-row">
-        <span>
-          Worker
-          @if (j.workerRatePerDay && j.workerDays) {
-            <span class="text-color-secondary"> ({{ j.workerRatePerDay | myr }} &times; {{ j.workerDays }} days)</span>
-          }
-        </span>
-        <span>{{ j.workerCost | myr }}</span>
-      </div>
-      <div class="summary-row"><span>Other Costs</span><span>{{ j.otherCosts | myr }}</span></div>
+      <div class="summary-row"><span>Total Income</span><span>{{ j.totalIncome | myr }}</span></div>
       <div class="summary-row summary-total"><span>Total Cost</span><span>{{ j.totalCost | myr }}</span></div>
       <div class="profit-display" [class.text-negative]="j.profit < 0" [class.text-positive]="j.profit >= 0">
         <span class="profit-label">PROFIT</span>
@@ -60,33 +60,53 @@
 }
 
 <!-- Edit job dialog -->
-<p-dialog [(visible)]="jobDialogVisible" header="Edit Job" [modal]="true" [style]="{ width: '30rem' }" [dismissableMask]="true">
+<p-dialog [(visible)]="jobDialogVisible" header="Edit Job" [modal]="true" [style]="{ width: '32rem' }" [dismissableMask]="true">
   <div class="flex flex-column gap-3">
     <div class="field"><label>Job Name</label><input pInputText class="w-full" [(ngModel)]="jobForm.name" name="name" /></div>
 
     <div class="field">
-      <label>Price (RM) *</label>
-      <p-inputnumber class="w-full" [(ngModel)]="jobForm.collectionAmount" name="collectionAmount" mode="decimal" prefix="RM " [minFractionDigits]="2" />
-    </div>
-    <div class="field">
-      <label>Materials (RM)</label>
-      <p-inputnumber class="w-full" [(ngModel)]="jobForm.materialsCost" name="materialsCost" mode="decimal" prefix="RM " [minFractionDigits]="2" />
-    </div>
-    <div class="field">
-      <label>Worker</label>
-      <div class="flex align-items-center gap-2">
-        <p-inputnumber class="flex-1" [(ngModel)]="jobForm.workerRatePerDay" (ngModelChange)="onWorkerInputsChange()" name="workerRatePerDay" mode="decimal" prefix="RM " placeholder="Rate/day" />
-        <span class="text-color-secondary">&times;</span>
-        <p-inputnumber class="flex-1" [(ngModel)]="jobForm.workerDays" (ngModelChange)="onWorkerInputsChange()" name="workerDays" placeholder="Days" [min]="0" />
+      <label>Entries</label>
+
+      <div class="entry-row flex flex-column gap-3">
+        <p-selectButton
+          class="type-toggle" [options]="typeOptions" optionLabel="label" optionValue="value" [allowEmpty]="false"
+          [ngModel]="entryType(draft)" (ngModelChange)="setEntryType(draft, $event)" name="draftType"
+        />
+        <p-autoComplete
+          class="w-full" styleClass="w-full" [(ngModel)]="draft.description" name="draftDescription"
+          [suggestions]="filteredSuggestions" (completeMethod)="searchSuggestions($event)"
+          (onSelect)="onDescriptionSelected(draft, $event)"
+          inputStyleClass="w-full" placeholder="Description"
+        />
+        <p-inputnumber class="w-full" [(ngModel)]="draft.amount" name="draftAmount" mode="decimal" prefix="RM " [minFractionDigits]="2" placeholder="Amount" />
+        <p-select
+          class="w-full"
+          [options]="entryType(draft) === 'EXPENSE' ? expenseCategoryOptions : incomeCategoryOptions"
+          optionLabel="label" optionValue="value" [(ngModel)]="draft.category" name="draftCategory"
+        />
+        <button pButton type="button" label="Add" icon="pi pi-plus" class="w-full" (click)="addDraftEntry()"></button>
       </div>
-      <p-inputnumber class="w-full mt-2" [(ngModel)]="jobForm.workerCost" name="workerCost" mode="decimal" prefix="RM " [minFractionDigits]="2" placeholder="Worker cost total (auto-filled above, or type directly)" />
-    </div>
-    <div class="field">
-      <label>Other Costs (RM)</label>
-      <p-inputnumber class="w-full" [(ngModel)]="jobForm.otherCosts" name="otherCosts" mode="decimal" prefix="RM " [minFractionDigits]="2" placeholder="Food, delivery, misc." />
+
+      @if (jobForm.entries.length > 0) {
+        <div class="flex flex-column gap-2 mt-2">
+          @for (entry of jobForm.entries; track $index) {
+            <div class="added-entry-row">
+              <span>
+                {{ entry.description || categoryLabel(entry.category) }}
+                <span class="text-color-secondary">({{ categoryLabel(entry.category) }})</span>
+              </span>
+              <span [class.text-positive]="entry.category === 'INCOME'" [class.text-negative]="entry.category !== 'INCOME'">
+                {{ entry.category === 'INCOME' ? '+' : '−' }}{{ entry.amount | myr }}
+              </span>
+              <button pButton type="button" icon="pi pi-trash" [text]="true" severity="danger" size="small" (click)="removeEntry($index)"></button>
+            </div>
+          }
+        </div>
+      }
     </div>
 
     <div class="profit-summary">
+      <div class="summary-row"><span>Total Income</span><span>{{ previewTotalIncome | myr }}</span></div>
       <div class="summary-row"><span>Total Cost</span><span>{{ previewTotalCost | myr }}</span></div>
       <div class="profit-display" [class.text-negative]="previewProfit < 0" [class.text-positive]="previewProfit >= 0">
         <span class="profit-label">PROFIT</span>

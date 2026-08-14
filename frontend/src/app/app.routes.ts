@@ -11,11 +11,7 @@ export const routes: Routes = [
     loadComponent: () => import('./shared/components/app-layout.component').then(m => m.AppLayoutComponent),
     canActivate: [authGuard],
     children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      {
-        path: 'dashboard',
-        loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
-      },
+      { path: '', redirectTo: 'jobs', pathMatch: 'full' },
       {
         path: 'jobs',
         loadComponent: () => import('./features/jobs/job-list.component').then(m => m.JobListComponent),
@@ -23,10 +19,6 @@ export const routes: Routes = [
       {
         path: 'jobs/:id',
         loadComponent: () => import('./features/jobs/job-detail.component').then(m => m.JobDetailComponent),
-      },
-      {
-        path: 'reports',
-        loadComponent: () => import('./features/reports/reports.component').then(m => m.ReportsComponent),
       },
       {
         path: 'settings',

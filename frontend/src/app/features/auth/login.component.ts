@@ -8,11 +8,15 @@ import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 import { PasswordModule } from 'primeng/password';
 import { AuthService } from '../../core/auth/auth.service';
+import { ThemeToggleButtonComponent } from '../../shared/theme-toggle/theme-toggle-button.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonModule, CardModule, InputTextModule, PasswordModule, MessageModule],
+  imports: [
+    CommonModule, FormsModule, ButtonModule, CardModule, InputTextModule, PasswordModule, MessageModule,
+    ThemeToggleButtonComponent,
+  ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })

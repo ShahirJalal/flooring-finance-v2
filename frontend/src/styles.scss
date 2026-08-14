@@ -27,6 +27,20 @@ html.app-dark {
   --app-surface-bg: #141414;
 }
 
+// PrimeNG's own components (card, dialog, table cells, ...) don't read
+// --app-surface-bg directly - they all read {content.background}, which
+// Aura resolves to its own default shade. Redefining that token here is
+// what actually makes every one of them pick up our surface shade, rather
+// than overriding each component's background individually and inevitably
+// missing one (a table's cells used to stay on Aura's own default dark
+// gray while the card around them switched to ours, leaving a visible seam
+// between the table and the card containing it). !important because
+// PrimeNG's theme CSS is injected at runtime and isn't reliably guaranteed
+// to load before this stylesheet, so normal cascade order can't be trusted.
+:root, html.app-dark {
+  --p-content-background: var(--app-surface-bg) !important;
+}
+
 html, body {
   height: 100%;
   margin: 0;
@@ -35,13 +49,9 @@ html, body {
   color: var(--p-text-color);
 }
 
-// PrimeNG's own card/dialog stylesheet sets `background` itself (Aura has
-// no border token for either, so the border here is a plain addition, not
-// an override) - the !important on background is needed because PrimeNG's
-// theme CSS is injected at runtime and isn't reliably guaranteed to load
-// before this stylesheet, so normal cascade order can't be trusted here.
+// Aura has no border token for card/dialog, so this is a plain addition,
+// not an override.
 .p-card, .p-dialog {
-  background: var(--app-surface-bg) !important;
   border: 1px solid var(--p-content-border-color);
 }
 
@@ -161,6 +171,12 @@ p-card, p-skeleton, p-chart, p-table, p-dialog, p-confirmdialog, p-toast {
   padding: 0.5rem 0;
   border-bottom: 1px solid var(--p-content-border-color);
   font-variant-numeric: tabular-nums;
+}
+
+// The last entry row right before the totals divider doesn't need its own
+// hairline underneath - it'd just double up with the <hr> immediately below it.
+.summary-row:has(+ hr) {
+  border-bottom: none;
 }
 
 .summary-total {

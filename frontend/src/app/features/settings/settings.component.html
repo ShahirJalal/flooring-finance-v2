@@ -3,21 +3,6 @@
     <h1>Settings</h1>
   </div>
 
-  <p-card header="Appearance">
-    <div class="field">
-      <label>Theme</label>
-      <p-selectButton
-        [options]="themeOptions" optionLabel="label" optionValue="value" [allowEmpty]="false"
-        [ngModel]="themeService.theme()" (ngModelChange)="themeService.set($event)"
-      >
-        <ng-template let-item>
-          <i [class]="item.icon"></i>
-          <span class="ml-2">{{ item.label }}</span>
-        </ng-template>
-      </p-selectButton>
-    </div>
-  </p-card>
-
   <p-card header="Account">
     @if (authService.currentUser(); as user) {
       <p class="mt-0"><strong>Username:</strong> {{ user.username }}</p>

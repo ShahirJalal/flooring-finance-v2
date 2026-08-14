@@ -8,25 +8,18 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 import { PasswordModule } from 'primeng/password';
-import { SelectButtonModule } from 'primeng/selectbutton';
 import { AuthService } from '../../core/auth/auth.service';
-import { Theme, ThemeService } from '../../core/theme/theme.service';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
   imports: [
     CommonModule, FormsModule, ButtonModule, CardModule, DialogModule,
-    InputTextModule, MessageModule, PasswordModule, SelectButtonModule,
+    InputTextModule, MessageModule, PasswordModule,
   ],
   templateUrl: './settings.component.html',
 })
 export class SettingsComponent implements OnInit {
-  readonly themeOptions: { label: string; value: Theme; icon: string }[] = [
-    { label: 'Light', value: 'light', icon: 'pi pi-sun' },
-    { label: 'Dark', value: 'dark', icon: 'pi pi-moon' },
-  ];
-
   // --- Profile ---
   profileForm: { email: string; fullName: string | null } = { email: '', fullName: null };
   readonly profileSubmitting = signal(false);
@@ -40,7 +33,6 @@ export class SettingsComponent implements OnInit {
 
   constructor(
     public readonly authService: AuthService,
-    public readonly themeService: ThemeService,
     private readonly messageService: MessageService,
   ) {}
 

@@ -153,6 +153,42 @@ p-card, p-skeleton, p-chart, p-table, p-dialog, p-confirmdialog, p-toast {
   line-height: 1.1;
 }
 
+// --- The entry composer (New/Edit Job dialogs): type, description, amount,
+// category and an Add button. What he taps Add on joins the plain list below. ---
+.entry-row {
+  padding: 0.6rem;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: var(--p-content-border-radius);
+}
+
+// --- One already-added entry, shown read-only below the composer ---
+.added-entry-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--p-content-border-color);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+// --- Expense/Income toggle on each entry row: full-width, evenly split.
+// Everything else (the light track, the white "checked" card with its subtle
+// shadow) is Aura's own default SelectButton styling - deliberately not
+// overridden further, same as this app's sibling project does it. ---
+.type-toggle {
+  display: flex;
+  width: 100%;
+
+  .p-togglebutton {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
 // --- Empty states: centered icon + message + optional CTA, used inside a p-card ---
 .empty-state {
   display: flex;

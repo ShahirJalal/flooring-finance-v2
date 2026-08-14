@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Job, JobRequest, JobSummary } from '../../shared/models/job.model';
+import { EntrySuggestion, Job, JobRequest, JobSummary } from '../../shared/models/job.model';
 
 @Injectable({ providedIn: 'root' })
 export class JobService {
@@ -12,6 +12,10 @@ export class JobService {
   list(search?: string): Observable<JobSummary[]> {
     const query = search ? `?search=${encodeURIComponent(search)}` : '';
     return this.http.get<JobSummary[]>(`${this.baseUrl}${query}`);
+  }
+
+  entrySuggestions(): Observable<EntrySuggestion[]> {
+    return this.http.get<EntrySuggestion[]>(`${this.baseUrl}/entry-suggestions`);
   }
 
   findById(id: number): Observable<Job> {

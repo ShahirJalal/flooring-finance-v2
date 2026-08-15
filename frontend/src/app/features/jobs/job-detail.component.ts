@@ -171,12 +171,19 @@ export class JobDetailComponent implements OnInit {
   }
 
   saveJob(): void {
+    if (!this.jobForm.name?.trim()) {
+      // Unlike the create flow (where an empty name is just a placeholder that
+      // was never really "cleared"), here the field held real, existing data -
+      // silently falling back to the old name would mask an accidental edit.
+      this.messageService.add({ severity: 'warn', summary: 'Job name is required' });
+      return;
+    }
     if (this.jobForm.entries.length === 0) {
       this.messageService.add({ severity: 'warn', summary: 'Add at least one entry' });
       return;
     }
     const request: JobRequest = {
-      name: this.jobForm.name?.trim() || this.job()!.name,
+      name: this.jobForm.name.trim(),
       customerName: this.jobForm.customerName,
       location: this.jobForm.location,
       jobDate: toIsoDate(this.jobForm.jobDate),

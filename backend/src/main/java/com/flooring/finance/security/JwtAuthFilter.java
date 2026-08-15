@@ -1,5 +1,6 @@
 package com.flooring.finance.security;
 
+import com.flooring.finance.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -26,10 +27,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
+    private final UserRepository userRepository;
 
-    public JwtAuthFilter(JwtService jwtService, CustomUserDetailsService userDetailsService) {
+    public JwtAuthFilter(JwtService jwtService, CustomUserDetailsService userDetailsService, UserRepository userRepository) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -42,14 +45,30 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         if (token != null && jwtService.isTokenValid(token) && SecurityContextHolder.getContext().getAuthentication() == null) {
             String username = jwtService.extractUsername(token);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+            if (isStillValidForUser(token, username)) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    /**
+     * A token issued before the user's last logout/password change no longer
+     * counts, even if it hasn't expired yet. Deliberately not a timestamp
+     * comparison - a token embeds the tokenVersion it was issued under, and
+     * is valid only while that still matches the user's current value. No
+     * clock, no flooring, no race window at any timing (see BUG_REPORT.txt
+     * #4 for why a clock-based cutoff can't be made race-free either way).
+     */
+    private boolean isStillValidForUser(String token, String username) {
+        return userRepository.findByUsername(username)
+                .map(user -> jwtService.extractTokenVersion(token) == user.getTokenVersion())
+                .orElse(false);
     }
 
     private String extractToken(HttpServletRequest request) {

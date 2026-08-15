@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -32,4 +33,14 @@ public class User extends BaseEntity {
 
     @Column(name = "full_name", length = 150)
     private String fullName;
+
+    /**
+     * Bumped on logout/password-change; embedded in every JWT at login time.
+     * A token whose embedded version no longer matches this is treated as
+     * logged-out, even if it hasn't expired yet - a plain integer equality
+     * check, with no clock and no race window at any timing.
+     */
+    @Column(name = "token_version", nullable = false)
+    @Builder.Default
+    private Integer tokenVersion = 0;
 }

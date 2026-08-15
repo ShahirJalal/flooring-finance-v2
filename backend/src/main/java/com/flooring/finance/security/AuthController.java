@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,32 +37,58 @@ public class AuthController {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final LoginRateLimiter loginRateLimiter;
 
     @Value("${app.security.cookie-secure}")
     private boolean cookieSecure;
 
-    public AuthController(AuthenticationManager authenticationManager, JwtService jwtService, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthController(
+            AuthenticationManager authenticationManager, JwtService jwtService, UserRepository userRepository,
+            PasswordEncoder passwordEncoder, LoginRateLimiter loginRateLimiter
+    ) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.loginRateLimiter = loginRateLimiter;
     }
 
     @PostMapping("/login")
     public ResponseEntity<CurrentUserResponse> login(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.username(), request.password())
-        );
-        String token = jwtService.generateToken(authentication.getName());
-        response.addHeader("Set-Cookie", buildCookie(token, jwtService.getExpirationSeconds()).toString());
+        loginRateLimiter.checkAllowed(request.username());
+
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.username(), request.password())
+            );
+        } catch (AuthenticationException ex) {
+            loginRateLimiter.recordFailure(request.username());
+            throw ex;
+        }
+        loginRateLimiter.recordSuccess(request.username());
 
         User user = userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
+
+        String token = jwtService.generateToken(authentication.getName(), user.getTokenVersion());
+        response.addHeader("Set-Cookie", buildCookie(token, jwtService.getExpirationSeconds()).toString());
+
         return ResponseEntity.ok(toResponse(user));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletResponse response) {
+        // Belt-and-suspenders alongside clearing the cookie: a JWT that was
+        // captured before logout (proxy log, compromised machine, ...) stops
+        // being accepted by JwtAuthFilter from this moment on, rather than
+        // silently remaining valid for the rest of its 7-day lifetime. Bumping
+        // an integer version (rather than comparing timestamps) means there's
+        // no clock-precision race window at any timing.
+        User user = currentUser();
+        user.setTokenVersion(user.getTokenVersion() + 1);
+        userRepository.save(user);
+
         response.addHeader("Set-Cookie", buildCookie("", 0).toString());
         SecurityContextHolder.clearContext();
         return ResponseEntity.noContent().build();
@@ -88,6 +115,8 @@ public class AuthController {
             throw new IllegalArgumentException("Current password is incorrect");
         }
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        // Any session started under the old password stops working immediately.
+        user.setTokenVersion(user.getTokenVersion() + 1);
         userRepository.save(user);
         return ResponseEntity.noContent().build();
     }

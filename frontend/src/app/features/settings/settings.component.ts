@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -34,6 +35,7 @@ export class SettingsComponent implements OnInit {
   constructor(
     public readonly authService: AuthService,
     private readonly messageService: MessageService,
+    private readonly router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -88,7 +90,12 @@ export class SettingsComponent implements OnInit {
       next: () => {
         this.passwordSubmitting.set(false);
         this.passwordDialogVisible.set(false);
-        this.messageService.add({ severity: 'success', summary: 'Password changed', life: 2500 });
+        // The backend just invalidated every existing session (this one
+        // included), so the cookie we're holding no longer works - clear
+        // local state and send him to log in fresh rather than leaving him
+        // on a page that will 401 on the next request.
+        this.authService.clearSession();
+        this.router.navigate(['/login'], { queryParams: { message: 'Password changed. Please log in again.' } });
       },
       error: err => {
         this.passwordSubmitting.set(false);

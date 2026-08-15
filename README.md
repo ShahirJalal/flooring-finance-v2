@@ -7,18 +7,22 @@ one question, quickly:
 > profit did I make?
 
 This is **not** an accounting, ERP, payroll, inventory or CRM system. It has
-four sections - Dashboard, Jobs, Reports, Settings - and one core entity:
-the **Job**, which carries a Collection amount and five cost buckets
-(Materials, Delivery, Other Costs, Worker Salary, Worker Food).
+one real screen - **Jobs** - plus **Settings**, and one core entity: the
+**Job**, which is just a name, an optional date/customer/location/notes, and
+a freeform list of **entries** the owner writes himself. Each entry is a
+description, an amount, and a category - `Income`, `Materials`, `Worker`,
+`Delivery` or `Other` - rather than a fixed set of cost fields.
 
 ```
-Total Cost = Materials + Delivery + Other Costs + Worker Salary + Worker Food
-Profit     = Collection - Total Cost
-Margin     = Profit / Collection x 100   (0% when Collection is 0)
+Total Income = sum of entries tagged Income
+Total Cost   = sum of every other entry
+Profit       = Total Income - Total Cost
 ```
 
 All of this is computed on the backend, in one place
-(`JobCalculationService`), never in Angular.
+(`JobCalculationService`), never in Angular. There is no profit-margin
+percentage shown anywhere in the app - just the profit figure itself, in
+large green or red text.
 
 ---
 
@@ -26,11 +30,14 @@ All of this is computed on the backend, in one place
 
 | Layer      | Technology |
 |------------|------------|
-| Frontend   | Angular 19 (standalone components), PrimeNG + PrimeFlex, Nginx |
+| Frontend   | Angular 19 (standalone components, signals), PrimeNG + PrimeFlex, self-hosted Inter font, Nginx |
 | Backend    | Java 17, Spring Boot 3, Spring Web, Spring Data JPA, Spring Security, Flyway |
 | Database   | PostgreSQL 16 |
 | Auth       | JWT in an httpOnly/SameSite=Strict cookie (single owner account) |
 | Deployment | Docker, Docker Compose, Jenkins, Ubuntu Server, Cloudflare Tunnel |
+
+The UI follows a flat, lined look (bordered panels instead of drop shadows)
+with light/dark mode, toggleable from the top bar or the login page.
 
 ## Repository structure
 
@@ -46,10 +53,10 @@ flooring-finance/            (this repo)
 
 Backend package layout: `config / security / common / entity / repository /
 dto / mapper / service / controller / exception / seed`. The whole domain is
-one aggregate: `Job` plus `MaterialCost / DeliveryCost / OtherCost /
-WorkerCost / WorkerFoodCost`, each a simple line item belonging to a job.
+one aggregate: `Job` plus `JobEntry` (one line item each - a category, a
+free-text description and an amount).
 
-Frontend layout: `core / shared / features/{auth,dashboard,jobs,reports,settings}`.
+Frontend layout: `core / shared / features/{auth,jobs,settings}`.
 
 ---
 
@@ -78,10 +85,10 @@ docker compose up -d --build
   need a shell into it
 
 With `SPRING_PROFILES_ACTIVE=dev` (the default), the backend seeds five
-realistic flooring jobs (Taman Melawati House, Shah Alam Office, Kajang
-House, Seremban Shop, Johor Bahru Project) with real MYR amounts across
-every cost category, so the dashboard and reports have real numbers
-immediately.
+hand-written flooring jobs (Taman Melawati House, Shah Alam Office, Kajang
+House, Seremban Shop, Johor Bahru Project) plus ~65 programmatically
+generated ones spread across the last ~20 months, each with a realistic
+entries breakdown, so the Jobs list has real numbers immediately.
 
 ### Seed login (development only)
 
@@ -149,14 +156,10 @@ Never commit a real `.env` file - it's gitignored.
 
 Everything financial lives in one backend class:
 `backend/src/main/java/com/flooring/finance/service/JobCalculationService.java`.
-It exposes `calculateMaterialTotal`, `calculateDeliveryTotal`,
-`calculateOtherCostTotal`, `calculateWorkerCostTotal`,
-`calculateWorkerFoodTotal`, `calculateTotalCost`, `calculateProfit` and
-`calculateProfitMargin` - each a plain `BigDecimal` sum/subtraction, with
-profit margin guarded against divide-by-zero when Collection is 0.
-`DashboardService` and `ReportService` simply sum these same per-job numbers
-across a date range. If the owner ever wants the formula to work
-differently, this is the only file that needs to change.
+It sums a job's entries into `Totals(totalIncome, totalCost, profit)` - a
+single pass, no per-category subtotals stored anywhere, no percentage. If
+the owner ever wants the formula to work differently, this is the only file
+that needs to change.
 
 ---
 
@@ -201,7 +204,7 @@ it just sits there and gets reused by every subsequent deploy.
 
 ## Cloudflare Tunnel
 
-In production this app is reached at `finance.shahirjalal.com` via a
+In production this app is reached at `finance.experimentbuild.com` via a
 Cloudflare Tunnel on the Ubuntu server, pointed at `http://localhost` (the
 `frontend` container's published port). No Cloudflare-specific
 configuration lives inside this repo - the application works the same over
@@ -216,7 +219,6 @@ route, point the ingress rule at `http://localhost:80`).
 - Currency: MYR, always displayed as `RM 1,234.56`.
 - Timezone: `Asia/Kuala_Lumpur`.
 - Dates: `DD/MM/YYYY` throughout the UI.
-- Jobs reference the 13 Malaysian states + 3 federal territories.
 - No SST/tax, EPF/SOCSO/PCB, payroll, or accounting-ledger logic - out of
   scope by design.
 
@@ -227,13 +229,13 @@ route, point the ingress rule at `http://localhost:80`).
 Per the brief, this stays a small tool, not a platform:
 
 - No separate Customer/Supplier/Worker/Inventory entities - customer name
-  and worker names are free-text fields on the job and its cost line items.
+  is a free-text field on the job, and worker cost is just another entry.
 - No quotations, invoicing, payment/deposit tracking, payroll, or multi-user
   permissions.
-- "Collection" is a single figure per job for now (not a list of
-  payments) - the field is isolated enough that a deposit/payment list could
-  be added later without breaking the API contract.
-- Cost line items support add/delete only (no edit) - fixing a typo means
+- No job status or state field, no dashboard, no reports/charts, no profit
+  margin percentage - these existed in earlier iterations and were
+  deliberately cut down to "one screen, one number that matters."
+- Entries support add/delete only (no in-place edit) - fixing a typo means
   removing the entry and re-adding it, which keeps the API surface small.
 
 These are deliberate gaps, ready to be extended if the owner asks for them

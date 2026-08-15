@@ -67,14 +67,19 @@ public class JobService {
     }
 
     public JobResponse create(JobRequest request) {
-        Job saved = jobRepository.save(JobMapper.toEntity(request));
+        // saveAndFlush (not save) so createdAt/updatedAt - populated by
+        // Hibernate's @CreationTimestamp/@UpdateTimestamp only at flush time -
+        // are already set on the entity before toResponse() reads them.
+        // Otherwise the response can carry a stale value that only becomes
+        // correct on a later GET, once the surrounding transaction commits.
+        Job saved = jobRepository.saveAndFlush(JobMapper.toEntity(request));
         return JobMapper.toResponse(saved, calculationService.calculateTotals(saved));
     }
 
     public JobResponse update(Long id, JobRequest request) {
         Job job = getOrThrow(id);
         JobMapper.updateEntity(job, request);
-        Job saved = jobRepository.save(job);
+        Job saved = jobRepository.saveAndFlush(job);
         return JobMapper.toResponse(saved, calculationService.calculateTotals(saved));
     }
 

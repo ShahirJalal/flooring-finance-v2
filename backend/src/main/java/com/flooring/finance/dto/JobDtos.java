@@ -2,9 +2,11 @@ package com.flooring.finance.dto;
 
 import com.flooring.finance.common.EntryCategory;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -17,8 +19,8 @@ public final class JobDtos {
 
     public record JobEntryRequest(
             @NotNull EntryCategory category,
-            String description,
-            @NotNull @Positive BigDecimal amount
+            @Size(max = 255) String description,
+            @NotNull @Positive @Digits(integer = 10, fraction = 2) BigDecimal amount
     ) {
     }
 
@@ -31,9 +33,9 @@ public final class JobDtos {
     }
 
     public record JobRequest(
-            @NotBlank String name,
-            String customerName,
-            String location,
+            @NotBlank @Size(max = 200) String name,
+            @Size(max = 150) String customerName,
+            @Size(max = 255) String location,
             LocalDate jobDate,
             String notes,
             @NotNull List<@Valid JobEntryRequest> entries

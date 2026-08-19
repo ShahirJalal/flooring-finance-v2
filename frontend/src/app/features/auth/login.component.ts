@@ -54,9 +54,13 @@ export class LoginComponent implements OnInit {
         this.loading.set(false);
         this.router.navigate(['/jobs']);
       },
-      error: () => {
+      error: err => {
         this.loading.set(false);
-        this.errorMessage.set('Invalid username or password.');
+        // Was previously hardcoded to "Invalid username or password" for
+        // every failure, which was actively misleading for anything else -
+        // most notably a 429 lockout after repeated failed attempts, which
+        // looked identical to a wrong password with no way to tell them apart.
+        this.errorMessage.set(err?.error?.message || 'Invalid username or password.');
       },
     });
   }
